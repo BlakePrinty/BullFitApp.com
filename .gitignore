@@ -31,3 +31,10 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### SHHHH ###
+.env
+application-local.properties
+target/
+.idea/
+*.iml
