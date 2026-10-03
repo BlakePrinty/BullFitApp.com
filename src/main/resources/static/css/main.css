@@ -1,0 +1,4 @@
+body { font-family: sans-serif; margin: 0; }
+.navbar { padding: 1rem; background: #111; }
+.navbar .brand { color: #fff; text-decoration: none; font-weight: bold; }
+main { padding: 2rem; }
