@@ -34,7 +34,6 @@ build/
 
 ### SHHHH ###
 .env
-application-local.properties
-target/
 .idea/
-*.iml
+application-dev.properties
+
