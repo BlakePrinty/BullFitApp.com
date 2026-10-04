@@ -1,9 +1,11 @@
 package com.bullfitapp.bullfit.user;
 
+import jakarta.transaction.Transactional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.Set;
 
 @Service
 public class UserService {
@@ -17,6 +19,10 @@ public class UserService {
     }
 
     public void register(RegistrationForm form) {
+        if (RESERVED.contains(form.getUsername().toLowerCase())) {
+            throw new IllegalArgumentException("username");
+        }
+
         if (userRepository.existsByUsername(form.getUsername())) {
             throw new IllegalArgumentException("username");
         }
@@ -33,10 +39,45 @@ public class UserService {
         if (form.getHeightFeet() != null || form.getHeightInches() != null) {
             int feet = form.getHeightFeet() == null ? 0 : form.getHeightFeet();
             int inches = form.getHeightInches() == null ? 0 : form.getHeightInches();
-            user.setHeight(BigDecimal.valueOf(feet * 12 + inches));
+            user.setHeight(toInches(form.getHeightFeet(), form.getHeightInches()));
         }
         user.setWeight(form.getWeight());
         user.setBirthDate(form.getBirthDate());
+        userRepository.save(user);
+    }
+
+    private static final Set<String> RESERVED = Set.of(
+            "admin", "developer", "support", "bullfit",
+            "settings", "profile", "login", "register", "logout");
+
+    private BigDecimal toInches(Integer feet, Integer inches) {
+        if (feet == null && inches == null) return null;
+        int total = (feet == null ? 0 : feet) * 12 + (inches == null ? 0 : inches);
+        return BigDecimal.valueOf(total);
+    }
+
+    private String blankToNull(String s) {
+        return (s == null || s.isBlank()) ? null : s.trim();
+    }
+
+    @Transactional
+    public void updateProfile(String username, EditProfileForm form) {
+        User user = userRepository.findByUsername(username).orElseThrow();
+        user.setFirstName(blankToNull(form.getFirstName()));
+        user.setLastName(blankToNull(form.getLastName()));
+        user.setBio(blankToNull(form.getBio()));
+        user.setWeight(form.getWeight());
+        user.setHeight(toInches(form.getHeightFeet(), form.getHeightInches()));
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public void changePassword(String username, String currentPassword, String newPassword) {
+        User user = userRepository.findByUsername(username).orElseThrow();
+        if (!passwordEncoder.matches(currentPassword, user.getPasswordHash())) {
+            throw new IllegalArgumentException("currentPassword");
+        }
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
         userRepository.save(user);
     }
 }

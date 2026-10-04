@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <body>
@@ -8,7 +9,9 @@
         <a th:href="@{/register}">Register</a>
     </span>
     <span sec:authorize="isAuthenticated()">
-        <span th:replace="~{fragments/username :: username(${currentUser})}"></span>
+        <a th:href="@{/profile}">
+            <span th:replace="~{fragments/username :: username(${currentUser})}"></span>
+        </a>
         <form th:action="@{/logout}" method="post" style="display:inline">
             <button type="submit">Log out</button>
         </form>

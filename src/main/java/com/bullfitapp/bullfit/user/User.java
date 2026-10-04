@@ -6,6 +6,8 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Period;
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 
 @Entity
 @Table(name = "users")
@@ -174,5 +176,16 @@ public class User {
 
     public String getDisplayPrefix() {
         return role.getPrefix();
+    }
+
+    public String getJoinedDisplay() {
+        return createdAt == null ? "" : "Joined " + createdAt.format(
+                DateTimeFormatter.ofPattern("MMMM yyyy", Locale.ENGLISH));
+    }
+
+    public String getFullName() {
+        String full = ((firstName == null ? "" : firstName) + " "
+                + (lastName == null ? "" : lastName)).trim();
+        return full.isEmpty() ? null : full;
     }
 }

@@ -3,3 +3,6 @@ a { color: #8ab4ff; }
 .navbar { padding: 1rem; background: #111; }
 .navbar .brand { color: #fff; text-decoration: none; font-weight: bold; }
 main { padding: 2rem; }
+.muted { color: #8b8f98; }
+.profile-header { padding-bottom: 1rem; border-bottom: 1px solid #2a2d34; }
+.bio { font-style: italic; }
