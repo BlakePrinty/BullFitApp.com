@@ -8,7 +8,7 @@
         <a th:href="@{/register}">Register</a>
     </span>
     <span sec:authorize="isAuthenticated()">
-        <span sec:authentication="name"></span>
+        <span th:replace="~{fragments/username :: username(${currentUser})}"></span>
         <form th:action="@{/logout}" method="post" style="display:inline">
             <button type="submit">Log out</button>
         </form>

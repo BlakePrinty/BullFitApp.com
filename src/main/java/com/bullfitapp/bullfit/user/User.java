@@ -164,4 +164,15 @@ public class User {
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
+
+    public String getDisplayColor() {
+        if (role == Role.DEVELOPER && usernameColor != null) {
+            return usernameColor;
+        }
+        return role.getColor();
+    }
+
+    public String getDisplayPrefix() {
+        return role.getPrefix();
+    }
 }
