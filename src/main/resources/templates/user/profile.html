@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title th:text="${profileUser.username} + ' - BullFit'">Profile</title>
+  <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<main>
+  <section class="profile-header">
+    <h1 th:replace="~{fragments/username :: username(${profileUser})}"></h1>
+    <p th:if="${profileUser.fullName != null}" th:text="${profileUser.fullName}"></p>
+    <p class="bio" th:if="${profileUser.bio != null}" th:text="${profileUser.bio}"></p>
+    <p class="muted" th:text="${profileUser.joinedDisplay}"></p>
+    <a th:if="${isOwner}" th:href="@{/settings/profile}">Edit profile</a>
+  </section>
+
+  <section>
+    <h2>Personal Records</h2>
+    <p class="muted">Nothing pinned yet.</p>
+  </section>
+
+  <section>
+    <h2>Published BullSplits</h2>
+    <p class="muted">No published BullSplits yet.</p>
+  </section>
+</main>
+</body>
+</html>

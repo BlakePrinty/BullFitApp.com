@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<span th:fragment="username(user)" class="username">
+    <span th:if="${user.displayPrefix != null}"
+          th:text="${user.displayPrefix}"
+          th:style="'color:' + ${user.role.color}"></span>
+    <span th:text="${user.username}"
+          th:style="'color:' + ${user.displayColor}"></span>
+</span>
+</body>
+</html>
