@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Manage exercises - BullFit</title>
+  <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<main>
+  <h1>Master exercise list</h1>
+  <p><a th:href="@{/admin/exercises/new}">+ Add exercise</a></p>
+  <p><a th:href="@{/admin/exercise-requests}">Review requests</a>
+    <span class="badge" th:if="${pendingCount > 0}" th:text="${pendingCount}"></span></p>
+
+  <table class="exercise-table">
+    <thead>
+    <tr><th>Name</th><th>Muscle group</th><th>Equipment</th><th>Status</th><th></th></tr>
+    </thead>
+    <tbody>
+    <tr th:each="ex : ${exercises}">
+      <td th:text="${ex.name}"></td>
+      <td th:text="${ex.muscleGroup.displayName}"></td>
+      <td th:text="${ex.equipment.displayName}"></td>
+      <td th:text="${ex.active} ? 'Active' : 'Archived'"></td>
+      <td>
+        <a th:href="@{/admin/exercises/{id}/edit(id=${ex.id})}">Edit</a>
+        <form th:if="${ex.active}" th:action="@{/admin/exercises/{id}/archive(id=${ex.id})}"
+              method="post" style="display:inline">
+          <button type="submit">Archive</button>
+        </form>
+        <form th:unless="${ex.active}" th:action="@{/admin/exercises/{id}/restore(id=${ex.id})}"
+              method="post" style="display:inline">
+          <button type="submit">Restore</button>
+        </form>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+</main>
+</body>
+</html>

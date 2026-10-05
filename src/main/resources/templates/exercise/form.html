@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Exercise - BullFit</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<main>
+    <h1 th:text="${heading}">Exercise</h1>
+
+    <p class="error" th:if="${#fields.hasGlobalErrors()}"
+       th:each="err : ${#fields.globalErrors()}" th:text="${err}"></p>
+
+    <form th:action="${formAction}" th:object="${form}" method="post">
+        <label>Name <input type="text" th:field="*{name}" maxlength="80"></label>
+        <span class="error" th:errors="*{name}"></span><br>
+
+        <label>Muscle group
+            <select th:field="*{muscleGroup}">
+                <option value="">Choose...</option>
+                <option th:each="m : ${muscleGroups}" th:value="${m}" th:text="${m.displayName}"></option>
+            </select>
+        </label>
+        <span class="error" th:errors="*{muscleGroup}"></span><br>
+
+        <label>Equipment
+            <select th:field="*{equipment}">
+                <option value="">Choose...</option>
+                <option th:each="e : ${equipmentTypes}" th:value="${e}" th:text="${e.displayName}"></option>
+            </select>
+        </label>
+        <span class="error" th:errors="*{equipment}"></span><br>
+
+        <button type="submit">Save</button>
+        <a th:href="${cancelUrl}">Cancel</a>
+    </form>
+</main>
+</body>
+</html>

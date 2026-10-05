@@ -10,6 +10,8 @@
     </span>
     <span sec:authorize="isAuthenticated()">
         <a th:href="@{/exercises}">Exercises</a>
+        <a th:href="@{/my-exercises}">My Exercises</a>
+        <a sec:authorize="hasAnyRole('ADMIN','DEVELOPER')" th:href="@{/admin/exercises}">Admin</a>
         <a th:href="@{/profile}">
             <span th:replace="~{fragments/username :: username(${currentUser})}"></span>
         </a>
