@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>My exercises - BullFit</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<main>
+    <h1>My exercises</h1>
+    <p class="muted" th:text="${activeCount} + ' of ' + ${maxCustom} + ' active custom exercises used'"></p>
+    <p class="error" th:if="${error}" th:text="${error}"></p>
+    <p><a th:href="@{/my-exercises/new}">+ New custom exercise</a></p>
+
+    <p class="muted" th:if="${#lists.isEmpty(exercises)}">
+        You have no custom exercises. Check the <a th:href="@{/exercises}">library</a> first, since it may already be there.
+    </p>
+
+    <table class="exercise-table" th:unless="${#lists.isEmpty(exercises)}">
+        <thead>
+        <tr><th>Name</th><th>Muscle group</th><th>Equipment</th><th>Status</th><th></th></tr>
+        </thead>
+        <tbody>
+        <tr th:each="ex : ${exercises}">
+            <td th:text="${ex.name}"></td>
+            <td th:text="${ex.muscleGroup.displayName}"></td>
+            <td th:text="${ex.equipment.displayName}"></td>
+            <td th:text="${ex.active} ? 'Active' : 'Archived'"></td>
+            <td>
+                <a th:href="@{/my-exercises/{id}/edit(id=${ex.id})}">Edit</a>
+                <form th:if="${ex.active}" th:action="@{/my-exercises/{id}/archive(id=${ex.id})}"
+                      method="post" style="display:inline">
+                    <button type="submit">Archive</button>
+                </form>
+                <form th:unless="${ex.active}" th:action="@{/my-exercises/{id}/restore(id=${ex.id})}"
+                      method="post" style="display:inline">
+                    <button type="submit">Restore</button>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</main>
+</body>
+</html>
