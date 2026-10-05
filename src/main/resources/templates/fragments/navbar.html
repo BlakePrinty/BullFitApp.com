@@ -9,6 +9,7 @@
         <a th:href="@{/register}">Register</a>
     </span>
     <span sec:authorize="isAuthenticated()">
+        <a th:href="@{/exercises}">Exercises</a>
         <a th:href="@{/profile}">
             <span th:replace="~{fragments/username :: username(${currentUser})}"></span>
         </a>

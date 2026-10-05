@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Exercises - BullFit</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<main>
+    <h1>Exercise library</h1>
+
+    <form th:action="@{/exercises}" method="get" class="filters">
+        <input type="text" name="q" th:value="${q}" placeholder="Search exercises">
+        <select name="muscle">
+            <option value="">All muscle groups</option>
+            <option th:each="m : ${muscleGroups}" th:value="${m}" th:text="${m.displayName}"
+                    th:selected="${m == selectedMuscle}"></option>
+        </select>
+        <select name="equipment">
+            <option value="">All equipment</option>
+            <option th:each="e : ${equipmentTypes}" th:value="${e}" th:text="${e.displayName}"
+                    th:selected="${e == selectedEquipment}"></option>
+        </select>
+        <button type="submit">Filter</button>
+        <a th:href="@{/exercises}">Clear</a>
+    </form>
+
+    <p class="muted" th:text="${#lists.size(exercises)} + ' exercises'"></p>
+
+    <table class="exercise-table">
+        <thead>
+        <tr><th>Name</th><th>Muscle group</th><th>Equipment</th></tr>
+        </thead>
+        <tbody>
+        <tr th:each="ex : ${exercises}">
+            <td>
+                <span th:text="${ex.name}"></span>
+                <span th:if="${ex.custom}" class="badge">Custom</span>
+            </td>
+            <td th:text="${ex.muscleGroup.displayName}"></td>
+            <td th:text="${ex.equipment.displayName}"></td>
+        </tr>
+        </tbody>
+    </table>
+    <p th:if="${#lists.isEmpty(exercises)}" class="muted">No exercises match.</p>
+</main>
+</body>
+</html>
