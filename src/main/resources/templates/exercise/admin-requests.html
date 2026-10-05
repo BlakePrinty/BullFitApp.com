@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Exercise requests - BullFit</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<main>
+    <h1>Exercise requests</h1>
+    <p><a th:href="@{/admin/exercises}">Back to master list</a></p>
+    <p class="message" th:if="${message}" th:text="${message}"></p>
+    <p class="error" th:if="${error}" th:text="${error}"></p>
+
+    <p class="muted" th:if="${#lists.isEmpty(requests)}">No pending requests.</p>
+
+    <div class="request-card" th:each="r : ${requests}">
+        <h3 th:text="${r.exerciseName}"></h3>
+        <p class="muted"
+           th:text="${r.muscleGroup.displayName} + ' | ' + ${r.equipment.displayName} + ' | requested by ' + ${r.requester}"></p>
+        <p th:if="${r.note != null}" th:text="${r.note}"></p>
+
+        <form th:action="@{/admin/exercise-requests/{id}/approve(id=${r.id})}" method="post"
+              style="display:inline">
+            <button type="submit">Approve</button>
+        </form>
+
+        <form th:action="@{/admin/exercise-requests/{id}/reject(id=${r.id})}" method="post"
+              style="display:inline">
+            <input type="text" name="reviewNote" maxlength="500" placeholder="Reason (required)">
+            <button type="submit">Reject</button>
+        </form>
+    </div>
+</main>
+</body>
+</html>

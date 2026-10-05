@@ -10,6 +10,8 @@
 <main>
   <h1>Master exercise list</h1>
   <p><a th:href="@{/admin/exercises/new}">+ Add exercise</a></p>
+  <p><a th:href="@{/admin/exercise-requests}">Review requests</a>
+    <span class="badge" th:if="${pendingCount > 0}" th:text="${pendingCount}"></span></p>
 
   <table class="exercise-table">
     <thead>

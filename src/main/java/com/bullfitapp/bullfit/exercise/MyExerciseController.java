@@ -18,9 +18,13 @@ public class MyExerciseController {
 
     private final ExerciseService exerciseService;
     private final UserRepository userRepository;
+    private final ExerciseRequestService requestService;
 
-    public MyExerciseController(ExerciseService exerciseService, UserRepository userRepository) {
+    public MyExerciseController(ExerciseService exerciseService,
+                                ExerciseRequestService requestService,
+                                UserRepository userRepository) {
         this.exerciseService = exerciseService;
+        this.requestService = requestService;
         this.userRepository = userRepository;
     }
 
@@ -34,7 +38,44 @@ public class MyExerciseController {
         model.addAttribute("exercises", exerciseService.customFor(userId));
         model.addAttribute("activeCount", exerciseService.activeCustomCount(userId));
         model.addAttribute("maxCustom", ExerciseService.MAX_CUSTOM_EXERCISES);
+        model.addAttribute("requests", requestService.forUser(userId));
+        model.addAttribute("pendingIds", requestService.pendingExerciseIds(userId));
         return "exercise/my-list";
+    }
+
+    @PostMapping("/{id}/archive")
+    public String archive(@PathVariable Long id, Principal principal, RedirectAttributes redirect) {
+        try {
+            exerciseService.setCustomActive(id, userId(principal), false);
+        } catch (ExerciseException e) {
+            redirect.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:" + LIST_URL;
+    }
+
+    @PostMapping("/{id}/request")
+    public String submitRequest(@PathVariable Long id,
+                                @RequestParam(required = false) String note,
+                                Principal principal, RedirectAttributes redirect) {
+        try {
+            requestService.submit(userId(principal), id, note);
+            redirect.addFlashAttribute("message", "Submitted for review.");
+        } catch (ExerciseException e) {
+            redirect.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:" + LIST_URL;
+    }
+
+    @PostMapping("/requests/{requestId}/withdraw")
+    public String withdrawRequest(@PathVariable Long requestId, Principal principal,
+                                  RedirectAttributes redirect) {
+        try {
+            requestService.withdraw(requestId, userId(principal));
+            redirect.addFlashAttribute("message", "Request withdrawn.");
+        } catch (ExerciseException e) {
+            redirect.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:" + LIST_URL;
     }
 
     @GetMapping("/new")
@@ -81,12 +122,6 @@ public class MyExerciseController {
         }
         ExerciseFormSupport.addFormAttributes(model, "Edit custom exercise", LIST_URL + "/" + id + "/edit", LIST_URL);
         return "exercise/form";
-    }
-
-    @PostMapping("/{id}/archive")
-    public String archive(@PathVariable Long id, Principal principal) {
-        exerciseService.setCustomActive(id, userId(principal), false);
-        return "redirect:" + LIST_URL;
     }
 
     @PostMapping("/{id}/restore")

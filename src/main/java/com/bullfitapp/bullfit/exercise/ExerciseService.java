@@ -13,9 +13,19 @@ public class ExerciseService {
     public static final int MAX_CUSTOM_EXERCISES = 25;
 
     private final ExerciseRepository exerciseRepository;
+    private final ExerciseRequestRepository requestRepository;
 
-    public ExerciseService(ExerciseRepository exerciseRepository) {
+    public ExerciseService(ExerciseRepository exerciseRepository,
+                           ExerciseRequestRepository requestRepository) {
         this.exerciseRepository = exerciseRepository;
+        this.requestRepository = requestRepository;
+    }
+
+    private void requireNotPending(Long exerciseId) {
+        if (requestRepository.existsByExerciseIdAndStatus(exerciseId, RequestStatus.PENDING)) {
+            throw new ExerciseException(null,
+                    "This exercise is pending review and can't be changed. Withdraw the request first.");
+        }
     }
 
     @Transactional(readOnly = true)

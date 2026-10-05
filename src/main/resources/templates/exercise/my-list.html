@@ -10,6 +10,7 @@
 <main>
     <h1>My exercises</h1>
     <p class="muted" th:text="${activeCount} + ' of ' + ${maxCustom} + ' active custom exercises used'"></p>
+    <p class="message" th:if="${message}" th:text="${message}"></p>
     <p class="error" th:if="${error}" th:text="${error}"></p>
     <p><a th:href="@{/my-exercises/new}">+ New custom exercise</a></p>
 
@@ -26,16 +27,49 @@
             <td th:text="${ex.name}"></td>
             <td th:text="${ex.muscleGroup.displayName}"></td>
             <td th:text="${ex.equipment.displayName}"></td>
-            <td th:text="${ex.active} ? 'Active' : 'Archived'"></td>
             <td>
-                <a th:href="@{/my-exercises/{id}/edit(id=${ex.id})}">Edit</a>
-                <form th:if="${ex.active}" th:action="@{/my-exercises/{id}/archive(id=${ex.id})}"
+                <span th:if="${pendingIds.contains(ex.id)}">Pending review</span>
+                <span th:unless="${pendingIds.contains(ex.id)}"
+                      th:text="${ex.active} ? 'Active' : 'Archived'"></span>
+            </td>
+            <td>
+                <span th:if="${!pendingIds.contains(ex.id)}">
+                    <a th:href="@{/my-exercises/{id}/edit(id=${ex.id})}">Edit</a>
+                    <form th:if="${ex.active}" th:action="@{/my-exercises/{id}/archive(id=${ex.id})}"
+                          method="post" style="display:inline">
+                        <button type="submit">Archive</button>
+                    </form>
+                    <form th:unless="${ex.active}" th:action="@{/my-exercises/{id}/restore(id=${ex.id})}"
+                          method="post" style="display:inline">
+                        <button type="submit">Restore</button>
+                    </form>
+                    <form th:if="${ex.active}" th:action="@{/my-exercises/{id}/request(id=${ex.id})}"
+                          method="post" style="display:inline">
+                        <input type="text" name="note" maxlength="500" placeholder="Note (optional)">
+                        <button type="submit">Submit to master list</button>
+                    </form>
+                </span>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <h2>My requests</h2>
+    <p class="muted" th:if="${#lists.isEmpty(requests)}">No requests yet.</p>
+    <table class="exercise-table" th:unless="${#lists.isEmpty(requests)}">
+        <thead>
+        <tr><th>Exercise</th><th>Status</th><th>Reviewer note</th><th></th></tr>
+        </thead>
+        <tbody>
+        <tr th:each="r : ${requests}">
+            <td th:text="${r.exerciseName}"></td>
+            <td th:text="${r.status}"></td>
+            <td th:text="${r.reviewNote}"></td>
+            <td>
+                <form th:if="${r.status.name() == 'PENDING'}"
+                      th:action="@{/my-exercises/requests/{id}/withdraw(id=${r.id})}"
                       method="post" style="display:inline">
-                    <button type="submit">Archive</button>
-                </form>
-                <form th:unless="${ex.active}" th:action="@{/my-exercises/{id}/restore(id=${ex.id})}"
-                      method="post" style="display:inline">
-                    <button type="submit">Restore</button>
+                    <button type="submit">Withdraw</button>
                 </form>
             </td>
         </tr>
