@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Personal records - BullFit</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<main>
+    <h1>Personal records</h1>
+    <p class="muted" th:text="${pinnedCount} + ' of ' + ${maxPinned} + ' pinned to your profile'"></p>
+    <p class="error" th:if="${error}" th:text="${error}"></p>
+
+    <p class="muted" th:if="${#lists.isEmpty(records)}">
+        No records yet. Finish a workout with some sets and they'll show up here.
+    </p>
+
+    <table class="exercise-table" th:unless="${#lists.isEmpty(records)}">
+        <thead>
+        <tr><th>Exercise</th><th>Best</th><th>Est. 1RM</th><th>Date</th><th></th></tr>
+        </thead>
+        <tbody>
+        <tr th:each="r : ${records}">
+            <td>
+                <span th:text="${r.exerciseName()}"></span><br>
+                <span class="muted"
+                      th:text="${r.muscleGroup().displayName} + ' | ' + ${r.equipment().displayName}"></span>
+            </td>
+            <td th:text="${r.bestDisplay()}"></td>
+            <td th:text="${r.e1rmDisplay()}"></td>
+            <td th:text="${@dt.date(r.achievedAt(), currentUser.timeZone)}"></td>
+            <td>
+                <form th:if="${pinnedIds.contains(r.exerciseId())}"
+                      th:action="@{/records/{id}/unpin(id=${r.exerciseId()})}" method="post">
+                    <button type="submit" class="link-button">Unpin</button>
+                </form>
+                <form th:unless="${pinnedIds.contains(r.exerciseId())}"
+                      th:action="@{/records/{id}/pin(id=${r.exerciseId()})}" method="post">
+                    <button type="submit">Pin</button>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</main>
+</body>
+</html>

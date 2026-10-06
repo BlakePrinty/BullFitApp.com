@@ -1,6 +1,7 @@
 package com.bullfitapp.bullfit.user;
 
 import com.bullfitapp.bullfit.common.ZoneOptions;
+import com.bullfitapp.bullfit.workout.PersonalRecordService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -19,10 +20,12 @@ public class ProfileController {
 
     private final UserRepository userRepository;
     private final UserService userService;
+    private final PersonalRecordService recordService;
 
-    public ProfileController(UserRepository userRepository, UserService userService) {
+    public ProfileController(UserRepository userRepository, UserService userService, PersonalRecordService recordService) {
         this.userRepository = userRepository;
         this.userService = userService;
+        this.recordService = recordService;
     }
 
     @GetMapping("/profile")
@@ -36,6 +39,7 @@ public class ProfileController {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         model.addAttribute("profileUser", user);
         model.addAttribute("isOwner", user.getUsername().equals(principal.getName()));
+        model.addAttribute("pinnedRecords", recordService.pinned(user.getId()));
         return "user/profile";
     }
 

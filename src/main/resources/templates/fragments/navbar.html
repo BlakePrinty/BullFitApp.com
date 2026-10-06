@@ -10,6 +10,7 @@
     </span>
     <span sec:authorize="isAuthenticated()">
         <a th:href="@{/exercises}">Exercises</a>
+        <a th:href="@{/records}">Records</a>
         <a th:href="@{/my-exercises}">My Exercises</a>
         <a th:href="@{/workouts}">Workout</a>
         <a sec:authorize="hasAnyRole('ADMIN','DEVELOPER')" th:href="@{/admin/exercises}">Admin</a>

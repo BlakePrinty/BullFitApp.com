@@ -12,6 +12,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.math.BigDecimal;
 import java.security.Principal;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -23,13 +24,15 @@ public class WorkoutController {
     private final WorkoutHistoryService historyService;
     private final ExerciseService exerciseService;
     private final UserRepository userRepository;
+    private final PersonalRecordService recordService;
 
     public WorkoutController(WorkoutService workoutService, WorkoutHistoryService historyService,
-                             ExerciseService exerciseService, UserRepository userRepository) {
+                             ExerciseService exerciseService, UserRepository userRepository, PersonalRecordService recordService) {
         this.workoutService = workoutService;
         this.historyService = historyService;
         this.exerciseService = exerciseService;
         this.userRepository = userRepository;
+        this.recordService = recordService;
     }
 
     private User user(Principal principal) {
@@ -205,13 +208,18 @@ public class WorkoutController {
 
     @PostMapping("/{id}/finish")
     public String finish(@PathVariable Long id, Principal principal, RedirectAttributes redirect) {
+        Long userId = userId(principal);
         try {
-            workoutService.finish(id, userId(principal));
-            return "redirect:/workouts/" + id + "/summary";
+            workoutService.finish(id, userId);
         } catch (WorkoutException e) {
             redirect.addFlashAttribute("error", e.getMessage());
             return "redirect:/workouts/" + id;
         }
+        List<String> lines = recordService.newRecordLines(userId, id);
+        if (!lines.isEmpty()) {
+            redirect.addFlashAttribute("newRecords", lines);
+        }
+        return "redirect:/workouts/" + id + "/summary";
     }
 
     @PostMapping("/{id}/discard")
