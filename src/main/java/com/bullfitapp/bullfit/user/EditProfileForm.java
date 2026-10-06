@@ -20,6 +20,8 @@ public class EditProfileForm {
 
     @DecimalMin("0.0") private BigDecimal weight;
 
+    private String timeZone;
+
     // getters and setters
 
     public String getFirstName() {
@@ -68,5 +70,13 @@ public class EditProfileForm {
 
     public void setWeight(BigDecimal weight) {
         this.weight = weight;
+    }
+
+    public String getTimeZone() {
+        return timeZone;
+    }
+
+    public void setTimeZone(String timeZone) {
+        this.timeZone = timeZone;
     }
 }

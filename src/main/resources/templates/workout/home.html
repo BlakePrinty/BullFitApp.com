@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Workouts - BullFit</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<main>
+    <h1>Workouts</h1>
+    <p class="error" th:if="${error}" th:text="${error}"></p>
+    <p class="message" th:if="${message}" th:text="${message}"></p>
+
+    <div th:if="${inProgressId != null}">
+        <p>You have a workout in progress.</p>
+        <a class="button" th:href="@{/workouts/{id}(id=${inProgressId})}">Resume workout</a>
+    </div>
+
+    <form th:if="${inProgressId == null}" th:action="@{/workouts/start}" method="post">
+        <button type="submit" class="primary">Start workout</button>
+    </form>
+
+    <h2>History</h2>
+    <p class="muted" th:if="${#lists.isEmpty(history.items)}">No completed workouts yet.</p>
+
+    <table class="exercise-table" th:unless="${#lists.isEmpty(history.items)}">
+        <thead>
+        <tr><th>Date</th><th>Exercises</th><th>Sets</th><th>Time</th></tr>
+        </thead>
+        <tbody>
+        <tr th:each="item : ${history.items}">
+            <td>
+                <a th:href="@{/workouts/{id}/summary(id=${item.id})}"
+                   th:text="${@dt.date(item.startedAt(), currentUser.timeZone)}"></a>
+            </td>
+            <td th:text="${item.exercisesLabel()}"></td>
+            <td th:text="${item.totalSets}"></td>
+            <td th:text="${item.durationMinutes()} + ' min'"></td>
+        </tr>
+        </tbody>
+    </table>
+
+    <p>
+        <a th:if="${history.hasPrevious}" th:href="@{/workouts(page=${history.page - 1})}">&laquo; Newer</a>
+        <a th:if="${history.hasNext}" th:href="@{/workouts(page=${history.page + 1})}">Older &raquo;</a>
+    </p>
+
+    <p class="muted" th:if="${history.hiddenCount > 0}"
+       th:text="${history.hiddenCount} + ' older workout(s) are hidden. Free accounts show the last ' + ${freeDays} + ' days; premium shows your full history.'"></p>
+</main>
+</body>
+</html>

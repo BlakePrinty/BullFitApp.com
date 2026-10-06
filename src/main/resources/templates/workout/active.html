@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Workout - BullFit</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<main>
+    <h1 th:text="${editing} ? 'Edit workout' : 'Workout in progress'">Workout</h1>
+    <p class="error" th:if="${error}" th:text="${error}"></p>
+
+    <p class="muted" th:if="${#lists.isEmpty(workout.exercises)}">
+        No exercises yet. Add your first one below.
+    </p>
+
+    <section class="we-card" th:each="ex : ${workout.exercises}" th:id="'we-' + ${ex.id}">
+        <div class="we-head">
+            <div>
+                <h3 th:text="${ex.name}"></h3>
+                <span class="muted"
+                      th:text="${ex.muscleGroup.displayName} + ' | ' + ${ex.equipment.displayName}"></span>
+            </div>
+            <form th:action="@{/workouts/{id}/exercises/{weId}/remove(id=${workout.id},weId=${ex.id})}"
+                  method="post">
+                <button type="submit" class="link-button">Remove</button>
+            </form>
+        </div>
+
+        <!-- Strength -->
+        <div th:unless="${ex.cardio}">
+            <table class="exercise-table" th:if="${!#lists.isEmpty(ex.sets)}">
+                <thead>
+                <tr>
+                    <th>Set</th>
+                    <th th:if="${ex.equipment.usesWeight()}" th:text="${ex.equipment.weightLabel}">Weight</th>
+                    <th>Reps</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="s : ${ex.sets}">
+                    <td th:text="${s.setNumber}"></td>
+                    <td th:if="${ex.equipment.usesWeight()}" th:text="${s.weightDisplay()}"></td>
+                    <td th:text="${s.reps}"></td>
+                    <td>
+                        <form th:action="@{/workouts/{id}/exercises/{weId}/sets/{setId}/delete(id=${workout.id},weId=${ex.id},setId=${s.id})}"
+                              method="post">
+                            <button type="submit" class="link-button">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
+            <form class="log-form"
+                  th:action="@{/workouts/{id}/exercises/{weId}/sets(id=${workout.id},weId=${ex.id})}"
+                  method="post">
+                <input th:if="${ex.equipment.usesWeight()}" type="number" name="weight"
+                       step="any" min="0" inputmode="decimal"
+                       th:placeholder="${ex.equipment.weightLabel}"
+                       th:required="${ex.equipment.weightRequired()}">
+                <input type="number" name="reps" min="1" max="100" inputmode="numeric"
+                       placeholder="Reps" required>
+                <button type="submit">Add set</button>
+            </form>
+        </div>
+
+        <!-- Cardio -->
+        <div th:if="${ex.cardio}">
+            <table class="exercise-table" th:if="${!#lists.isEmpty(ex.cardioEntries)}">
+                <thead>
+                <tr><th>Time</th><th>Distance (mi)</th><th>Speed (mph)</th><th>Incline (%)</th><th></th></tr>
+                </thead>
+                <tbody>
+                <tr th:each="c : ${ex.cardioEntries}">
+                    <td th:text="${c.durationDisplay()}"></td>
+                    <td th:text="${c.distanceDisplay()}"></td>
+                    <td th:text="${c.speedDisplay()}"></td>
+                    <td th:text="${c.inclineDisplay()}"></td>
+                    <td>
+                        <form th:action="@{/workouts/{id}/exercises/{weId}/cardio/{entryId}/delete(id=${workout.id},weId=${ex.id},entryId=${c.id})}"
+                              method="post">
+                            <button type="submit" class="link-button">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
+            <form class="log-form"
+                  th:action="@{/workouts/{id}/exercises/{weId}/cardio(id=${workout.id},weId=${ex.id})}"
+                  method="post">
+                <input type="number" name="minutes" min="0" max="1440" inputmode="numeric" placeholder="Min">
+                <input type="number" name="seconds" min="0" max="59" inputmode="numeric" placeholder="Sec">
+                <input type="number" name="distance" step="any" min="0" inputmode="decimal" placeholder="Miles">
+                <input type="number" name="speed" step="any" min="0" inputmode="decimal" placeholder="mph">
+                <input type="number" name="incline" step="any" min="0" inputmode="decimal" placeholder="Incline %">
+                <button type="submit">Add entry</button>
+            </form>
+        </div>
+    </section>
+
+    <p><a class="button" th:href="@{/workouts/{id}/add-exercise(id=${workout.id})}">+ Add exercise</a></p>
+
+    <div class="workout-actions" th:unless="${editing}">
+        <form th:action="@{/workouts/{id}/finish(id=${workout.id})}" method="post">
+            <button type="submit" class="primary">Finish workout</button>
+        </form>
+        <form th:action="@{/workouts/{id}/discard(id=${workout.id})}" method="post"
+              onsubmit="return confirm('Discard this workout? Everything logged will be deleted.');">
+            <button type="submit" class="link-button">Discard</button>
+        </form>
+    </div>
+
+    <div class="workout-actions" th:if="${editing}">
+        <form th:action="@{/workouts/{id}/done(id=${workout.id})}" method="post">
+            <button type="submit" class="primary">Done editing</button>
+        </form>
+        <form th:action="@{/workouts/{id}/delete(id=${workout.id})}" method="post"
+              onsubmit="return confirm('Delete this workout permanently?');">
+            <button type="submit" class="link-button">Delete workout</button>
+        </form>
+    </div>
+</main>
+</body>
+</html>
