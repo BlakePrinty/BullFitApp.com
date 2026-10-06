@@ -28,6 +28,12 @@
     <label>Weight (lbs) <input type="number" step="0.1" th:field="*{weight}"></label>
     <span th:errors="*{weight}"></span><br>
 
+    <label>Time zone
+      <select th:field="*{timeZone}">
+        <option th:each="z : ${zones}" th:value="${z}" th:text="${z}"></option>
+      </select>
+    </label><br>
+
     <p><a th:href="@{/settings/password}">Change password</a></p>
 
     <button type="submit">Save</button>

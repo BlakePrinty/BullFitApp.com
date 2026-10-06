@@ -1,5 +1,6 @@
 package com.bullfitapp.bullfit.user;
 
+import com.bullfitapp.bullfit.common.ZoneOptions;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -36,6 +37,7 @@ public class UserService {
         user.setEmail(email);
         user.setFirstName(form.getFirstName());
         user.setLastName(form.getLastName());
+        user.setTimeZone(ZoneOptions.isValid(form.getTimeZone()) ? form.getTimeZone() : ZoneOptions.DEFAULT);
         if (form.getHeightFeet() != null || form.getHeightInches() != null) {
             int feet = form.getHeightFeet() == null ? 0 : form.getHeightFeet();
             int inches = form.getHeightInches() == null ? 0 : form.getHeightInches();
@@ -68,6 +70,9 @@ public class UserService {
         user.setBio(blankToNull(form.getBio()));
         user.setWeight(form.getWeight());
         user.setHeight(toInches(form.getHeightFeet(), form.getHeightInches()));
+        if (ZoneOptions.isValid(form.getTimeZone())) {
+            user.setTimeZone(form.getTimeZone());
+        }
         userRepository.save(user);
     }
 

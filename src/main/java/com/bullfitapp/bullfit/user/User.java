@@ -59,6 +59,9 @@ public class User {
         createdAt = LocalDateTime.now();
     }
 
+    @Column(name = "time_zone", nullable = false)
+    private String timeZone = "America/New_York";
+
     public Long getId() {
         return id;
     }
@@ -187,5 +190,13 @@ public class User {
         String full = ((firstName == null ? "" : firstName) + " "
                 + (lastName == null ? "" : lastName)).trim();
         return full.isEmpty() ? null : full;
+    }
+
+    public String getTimeZone() {
+        return timeZone;
+    }
+
+    public void setTimeZone(String timeZone) {
+        this.timeZone = timeZone;
     }
 }

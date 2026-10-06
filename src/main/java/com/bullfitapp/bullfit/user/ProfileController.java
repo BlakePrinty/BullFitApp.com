@@ -1,5 +1,6 @@
 package com.bullfitapp.bullfit.user;
 
+import com.bullfitapp.bullfit.common.ZoneOptions;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -51,16 +52,21 @@ public class ProfileController {
             form.setHeightFeet(total / 12);
             form.setHeightInches(total % 12);
         }
+        form.setTimeZone(user.getTimeZone());
+        model.addAttribute("zones", ZoneOptions.all());
         model.addAttribute("form", form);
         return "user/edit-profile";
     }
 
     @PostMapping("/settings/profile")
     public String saveProfile(@Valid @ModelAttribute("form") EditProfileForm form,
-                              BindingResult result, Principal principal) {
+                              BindingResult result, Principal principal, Model model) {
         if (result.hasErrors()) {
             return "user/edit-profile";
         }
+
+        model.addAttribute("zones", ZoneOptions.all());
+
         userService.updateProfile(principal.getName(), form);
         return "redirect:/profile";
     }

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Workout summary - BullFit</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<main>
+    <h1>Workout complete</h1>
+    <p class="muted" th:text="${@dt.dateTime(workout.startedAt(), currentUser.timeZone)}"></p>
+    <div class="stats">
+        <div><strong th:text="${workout.durationMinutes()}"></strong> <span class="muted">minutes</span></div>
+        <div><strong th:text="${#lists.size(workout.exercises)}"></strong> <span class="muted">exercises</span></div>
+        <div><strong th:text="${workout.totalSets()}"></strong> <span class="muted">sets</span></div>
+        <div><strong th:text="${workout.totalVolumeDisplay()}"></strong> <span class="muted">lbs total volume</span></div>
+    </div>
+
+    <section class="we-card" th:each="ex : ${workout.exercises}">
+        <h3 th:text="${ex.name}"></h3>
+        <p th:if="${!ex.cardio}" th:text="${ex.setsSummary()}"></p>
+        <p th:if="${ex.cardio}" th:text="${ex.cardioSummary()}"></p>
+    </section>
+
+    <div class="workout-actions">
+        <a class="button" th:href="@{/workouts}">Back to workouts</a>
+        <a th:href="@{/workouts/{id}/edit(id=${workout.id})}">Edit workout</a>
+        <form th:action="@{/workouts/{id}/delete(id=${workout.id})}" method="post"
+              onsubmit="return confirm('Delete this workout permanently?');">
+            <button type="submit" class="link-button">Delete</button>
+        </form>
+    </div>
+</main>
+</body>
+</html>

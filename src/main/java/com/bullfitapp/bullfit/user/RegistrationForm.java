@@ -39,6 +39,8 @@ public class RegistrationForm {
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate birthDate;
 
+    private String timeZone;
+
     // GETTERS AND SETTERS
 
     public String getUsername() {
@@ -119,5 +121,13 @@ public class RegistrationForm {
 
     public void setBirthDate(LocalDate birthDate) {
         this.birthDate = birthDate;
+    }
+
+    public String getTimeZone() {
+        return timeZone;
+    }
+
+    public void setTimeZone(String timeZone) {
+        this.timeZone = timeZone;
     }
 }

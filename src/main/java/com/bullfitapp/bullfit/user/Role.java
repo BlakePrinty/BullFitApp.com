@@ -21,4 +21,8 @@ public enum Role {
     public String getPrefix() {
         return prefix;
     }
+
+    public boolean hasPremiumAccess() {
+        return this.ordinal() >= PREMIUM.ordinal();
+    }
 }
