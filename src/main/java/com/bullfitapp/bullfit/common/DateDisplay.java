@@ -2,10 +2,7 @@ package com.bullfitapp.bullfit.common;
 
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
@@ -32,5 +29,9 @@ public class DateDisplay {
 
     public String dateTime(LocalDateTime utc, String zone) {
         return utc == null ? "" : date(utc, zone) + " at " + time(utc, zone);
+    }
+
+    public String day(LocalDate date) {
+        return date == null ? "" : DATE.format(date);
     }
 }

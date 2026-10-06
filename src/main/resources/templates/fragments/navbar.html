@@ -10,9 +10,10 @@
     </span>
     <span sec:authorize="isAuthenticated()">
         <a th:href="@{/exercises}">Exercises</a>
-        <a th:href="@{/records}">Records</a>
         <a th:href="@{/my-exercises}">My Exercises</a>
+        <a th:href="@{/weight}">Weight</a>
         <a th:href="@{/workouts}">Workout</a>
+        <a th:href="@{/records}">Records</a>
         <a sec:authorize="hasAnyRole('ADMIN','DEVELOPER')" th:href="@{/admin/exercises}">Admin</a>
         <a th:href="@{/profile}">
             <span th:replace="~{fragments/username :: username(${currentUser})}"></span>
