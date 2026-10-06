@@ -18,6 +18,13 @@
         <div><strong th:text="${workout.totalVolumeDisplay()}"></strong> <span class="muted">lbs total volume</span></div>
     </div>
 
+    <section class="we-card pr-card" th:if="${newRecords != null and !#lists.isEmpty(newRecords)}">
+        <h3>New records</h3>
+        <ul>
+            <li th:each="line : ${newRecords}" th:text="${line}"></li>
+        </ul>
+    </section>
+
     <section class="we-card" th:each="ex : ${workout.exercises}">
         <h3 th:text="${ex.name}"></h3>
         <p th:if="${!ex.cardio}" th:text="${ex.setsSummary()}"></p>

@@ -18,7 +18,14 @@
 
   <section>
     <h2>Personal Records</h2>
-    <p class="muted">Nothing pinned yet.</p>
+    <p class="muted" th:if="${#lists.isEmpty(pinnedRecords)}">Nothing pinned yet.</p>
+    <ul class="pr-list" th:unless="${#lists.isEmpty(pinnedRecords)}">
+      <li th:each="pr : ${pinnedRecords}">
+        <strong th:text="${pr.exerciseName()}"></strong>:
+        <span th:text="${pr.bestDisplay()}"></span>
+      </li>
+    </ul>
+    <a th:if="${isOwner}" th:href="@{/records}">Manage records</a>
   </section>
 
   <section>
