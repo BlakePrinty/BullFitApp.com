@@ -50,7 +50,6 @@ public class ProfileController {
         form.setFirstName(user.getFirstName());
         form.setLastName(user.getLastName());
         form.setBio(user.getBio());
-        form.setWeight(user.getWeight());
         if (user.getHeight() != null) {
             int total = user.getHeight().intValue();
             form.setHeightFeet(total / 12);

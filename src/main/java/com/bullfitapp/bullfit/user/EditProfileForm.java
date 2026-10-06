@@ -18,8 +18,6 @@ public class EditProfileForm {
     @Min(0) @Max(8)  private Integer heightFeet;
     @Min(0) @Max(11) private Integer heightInches;
 
-    @DecimalMin("0.0") private BigDecimal weight;
-
     private String timeZone;
 
     // getters and setters
@@ -62,14 +60,6 @@ public class EditProfileForm {
 
     public void setHeightInches(Integer heightInches) {
         this.heightInches = heightInches;
-    }
-
-    public BigDecimal getWeight() {
-        return weight;
-    }
-
-    public void setWeight(BigDecimal weight) {
-        this.weight = weight;
     }
 
     public String getTimeZone() {

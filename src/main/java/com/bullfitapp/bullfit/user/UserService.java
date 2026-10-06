@@ -1,6 +1,7 @@
 package com.bullfitapp.bullfit.user;
 
 import com.bullfitapp.bullfit.common.ZoneOptions;
+import com.bullfitapp.bullfit.weight.WeightService;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -13,12 +14,15 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final WeightService weightService;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, WeightService weightService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.weightService = weightService;
     }
 
+    @Transactional
     public void register(RegistrationForm form) {
         if (RESERVED.contains(form.getUsername().toLowerCase())) {
             throw new IllegalArgumentException("username");
@@ -46,6 +50,9 @@ public class UserService {
         user.setWeight(form.getWeight());
         user.setBirthDate(form.getBirthDate());
         userRepository.save(user);
+        if (form.getWeight() != null) {
+            weightService.log(user.getId(), user.getTimeZone(), null, form.getWeight());
+        }
     }
 
     private static final Set<String> RESERVED = Set.of(
@@ -68,7 +75,6 @@ public class UserService {
         user.setFirstName(blankToNull(form.getFirstName()));
         user.setLastName(blankToNull(form.getLastName()));
         user.setBio(blankToNull(form.getBio()));
-        user.setWeight(form.getWeight());
         user.setHeight(toInches(form.getHeightFeet(), form.getHeightInches()));
         if (ZoneOptions.isValid(form.getTimeZone())) {
             user.setTimeZone(form.getTimeZone());

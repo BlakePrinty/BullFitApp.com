@@ -32,7 +32,9 @@ public class RegistrationForm {
     @Min(0) @Max(11)
     private Integer heightInches;
 
-    @DecimalMin("0.0") private BigDecimal weight;
+    @DecimalMin(value = "50.0", message = "Weight must be at least 50 lbs")
+    @DecimalMax(value = "1000.0", message = "Weight must be 1000 lbs or less")
+    private BigDecimal weight;
 
     @NotNull(message = "Birth date is required")
     @Past(message = "Birth date must be in the past")

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Weight - BullFit</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<main>
+    <h1>Weight</h1>
+    <p class="muted">Only you can see this page.</p>
+    <p class="message" th:if="${message}" th:text="${message}"></p>
+    <p class="error" th:if="${error}" th:text="${error}"></p>
+
+    <form class="log-form" th:action="@{/weight}" method="post">
+        <input type="date" name="date" th:value="${today}" th:max="${today}" required>
+        <input type="number" name="weight" step="0.1" min="50" max="1000"
+               inputmode="decimal" placeholder="Weight (lbs)" required>
+        <button type="submit">Log weight</button>
+    </form>
+    <p class="muted">Logging a date that already has an entry replaces it.</p>
+
+    <p class="muted" th:if="${totalEntries == 0}">No entries yet. Log your first weight above.</p>
+
+    <div th:if="${totalEntries > 0}">
+        <div class="range-buttons">
+            <button type="button" data-range="30">30 days</button>
+            <button type="button" data-range="90" class="active">90 days</button>
+            <button type="button" data-range="365">1 year</button>
+            <button type="button" data-range="0">All</button>
+        </div>
+
+        <div class="stats">
+            <div><strong id="statCurrent">-</strong> <span class="muted">current</span></div>
+            <div><strong id="statChange">-</strong> <span class="muted">change in range</span></div>
+            <div><strong id="statMin">-</strong> <span class="muted">lowest</span></div>
+            <div><strong id="statMax">-</strong> <span class="muted">highest</span></div>
+        </div>
+        <p class="muted" id="rangeEmpty" hidden>No entries in this range.</p>
+
+        <div class="chart-wrap"><canvas id="weightChart"></canvas></div>
+
+        <h2>Entries</h2>
+        <table class="exercise-table">
+            <thead><tr><th>Date</th><th>Weight</th><th></th></tr></thead>
+            <tbody>
+            <tr th:each="e : ${entries}">
+                <td th:text="${@dt.day(e.loggedOn)}"></td>
+                <td th:text="${e.weight} + ' lbs'"></td>
+                <td>
+                    <form th:action="@{/weight/{id}/delete(id=${e.id})}" method="post"
+                          onsubmit="return confirm('Delete this entry?');">
+                        <button type="submit" class="link-button">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        <p class="muted" th:if="${totalEntries > tableLimit}"
+           th:text="'Showing your latest ' + ${tableLimit} + ' of ' + ${totalEntries} + ' entries. The chart uses all of them.'"></p>
+    </div>
+</main>
+
+<script th:inline="javascript">
+    const EPOCH_DAYS = /*[[${epochDays}]]*/ [];
+    const WEIGHTS = /*[[${weights}]]*/ [];
+    const TODAY = /*[[${todayEpoch}]]*/ 0;
+</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script th:src="@{/js/weight-chart.js}"></script>
+</body>
+</html>
