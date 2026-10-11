@@ -3,6 +3,7 @@ package com.bullfitapp.bullfit.workout;
 import com.bullfitapp.bullfit.exercise.Equipment;
 import com.bullfitapp.bullfit.exercise.Exercise;
 import com.bullfitapp.bullfit.exercise.ExerciseRepository;
+import com.bullfitapp.bullfit.split.SplitRunService;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,17 +31,20 @@ public class WorkoutService {
     private final WorkoutSetRepository setRepository;
     private final CardioEntryRepository cardioRepository;
     private final ExerciseRepository exerciseRepository;
+    private final SplitRunService splitRunService;
 
     public WorkoutService(WorkoutRepository workoutRepository,
                           WorkoutExerciseRepository weRepository,
                           WorkoutSetRepository setRepository,
                           CardioEntryRepository cardioRepository,
-                          ExerciseRepository exerciseRepository) {
+                          ExerciseRepository exerciseRepository,
+                          SplitRunService splitRunService) {
         this.workoutRepository = workoutRepository;
         this.weRepository = weRepository;
         this.setRepository = setRepository;
         this.cardioRepository = cardioRepository;
         this.exerciseRepository = exerciseRepository;
+        this.splitRunService = splitRunService;
     }
 
     // ----- lifecycle -----
@@ -60,32 +64,42 @@ public class WorkoutService {
         });
     }
 
-    private record Classified(int logged, List<WorkoutExercise> empty) {}
+    private record Settled(int logged, List<WorkoutExercise> toDrop) {}
 
-    private Classified classify(Long workoutId) {
-        List<WorkoutExercise> empty = new ArrayList<>();
+    /** Marks planned exercises completed or skipped, and lists unplanned empty ones to drop. */
+    private Settled settle(Long workoutId) {
+        List<WorkoutExercise> toDrop = new ArrayList<>();
         int logged = 0;
         for (WorkoutExercise we : weRepository.findByWorkoutIdOrderByOrderIndex(workoutId)) {
             boolean hasData = setRepository.countByWorkoutExerciseId(we.getId()) > 0
                     || cardioRepository.countByWorkoutExerciseId(we.getId()) > 0;
-            if (hasData) logged++; else empty.add(we);
+            if (hasData) {
+                we.setStatus(WorkoutExerciseStatus.COMPLETED);
+                logged++;
+            } else if (we.isPlanned()) {
+                we.setStatus(WorkoutExerciseStatus.SKIPPED);
+            } else {
+                toDrop.add(we);
+            }
         }
-        return new Classified(logged, empty);
+        return new Settled(logged, toDrop);
     }
 
     @Transactional
     public void finish(Long workoutId, Long userId) {
         Workout workout = requireInProgress(workoutId, userId);
-        Classified c = classify(workoutId);
-        if (c.logged() == 0) {
+        Settled settled = settle(workoutId);
+        if (settled.logged() == 0) {
             throw new WorkoutException(
                     "Nothing logged yet. Log at least one set or cardio entry, or discard the workout.");
         }
-        weRepository.deleteAll(c.empty()); // exercises with nothing logged weren't done
+        weRepository.deleteAll(settled.toDrop());
         workout.setStatus(WorkoutStatus.COMPLETED);
         workout.setEndedAt(LocalDateTime.now(ZoneOffset.UTC));
         workoutRepository.save(workout);
+        splitRunService.afterWorkoutFinished(workout);
     }
+
 
     @Transactional
     public void discard(Long workoutId, Long userId) {
@@ -122,7 +136,11 @@ public class WorkoutService {
     @Transactional
     public void removeExercise(Long workoutId, Long userId, Long weId) {
         owned(workoutId, userId);
-        weRepository.delete(requireWorkoutExercise(weId, workoutId));
+        WorkoutExercise we = requireWorkoutExercise(weId, workoutId);
+        if (we.isPlanned()) {
+            throw new WorkoutException("Planned exercises can't be removed. Leave it empty and it will count as skipped.");
+        }
+        weRepository.delete(we);
     }
 
     // ----- strength sets -----
@@ -240,15 +258,15 @@ public class WorkoutService {
             Exercise ex = exercises.get(we.getExerciseId());
             views.add(new WorkoutExerciseView(
                     we.getId(), ex.getId(), ex.getName(), ex.getMuscleGroup(), ex.getEquipment(),
-                    ex.isCardio(),
+                    ex.isCardio(), we.isPlanned(), we.getStatus(), we.getTargetText(),
                     sets.getOrDefault(we.getId(), List.of()).stream()
                             .map(s -> new SetView(s.getId(), s.getSetNumber(), s.getWeight(), s.getReps())).toList(),
                     cardio.getOrDefault(we.getId(), List.of()).stream()
                             .map(c -> new CardioView(c.getId(), c.getDurationSeconds(),
                                     c.getDistance(), c.getSpeed(), c.getIncline())).toList()));
         }
-        return new WorkoutView(workout.getId(), workout.getStatus(),
-                workout.getStartedAt(), workout.getEndedAt(), views);
+        return new WorkoutView(workout.getId(), workout.getStatus(), workout.getStartedAt(), workout.getEndedAt(),
+                splitRunService.title(workout.getUserSplitId(), workout.getSplitDayId()), views);
     }
 
     // ----- helpers -----
@@ -291,12 +309,12 @@ public class WorkoutService {
     @Transactional
     public boolean completeEdit(Long workoutId, Long userId) {
         Workout workout = owned(workoutId, userId);
-        Classified c = classify(workoutId);
-        if (c.logged() == 0) {
+        Settled settled = settle(workoutId);
+        if (settled.logged() == 0) {
             workoutRepository.delete(workout);
             return true;
         }
-        weRepository.deleteAll(c.empty());
+        weRepository.deleteAll(settled.toDrop());
         return false;
     }
 }
