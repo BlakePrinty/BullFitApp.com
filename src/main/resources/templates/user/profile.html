@@ -30,8 +30,15 @@
 
   <section>
     <h2>Published BullSplits</h2>
-    <p class="muted">No published BullSplits yet.</p>
+    <p class="muted" th:if="${#lists.isEmpty(publishedSplits)}">No published BullSplits yet.</p>
+    <ul class="pr-list" th:unless="${#lists.isEmpty(publishedSplits)}">
+      <li th:each="s : ${publishedSplits}">
+        <a th:href="@{/browse/{id}(id=${s.id})}" th:text="${s.name}"></a>
+        <span class="muted" th:text="'(' + ${s.dayCount} + ' days)'"></span>
+      </li>
+    </ul>
   </section>
+
 </main>
 </body>
 </html>

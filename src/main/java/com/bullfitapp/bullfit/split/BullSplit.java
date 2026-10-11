@@ -19,6 +19,7 @@ public class BullSplit {
     @Column(name = "is_copy", nullable = false) private boolean copy;
     @Column(name = "copied_from_id") private Long copiedFromId;
     @Column(name = "created_at", nullable = false, updatable = false) private LocalDateTime createdAt;
+    @Column(name = "locked", nullable = false) private boolean locked;
 
     @PrePersist void onCreate() { createdAt = LocalDateTime.now(ZoneOffset.UTC); }
 
@@ -100,5 +101,13 @@ public class BullSplit {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public boolean isLocked() {
+        return locked;
+    }
+
+    public void setLocked(boolean locked) {
+        this.locked = locked;
     }
 }

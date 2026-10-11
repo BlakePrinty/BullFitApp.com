@@ -187,4 +187,31 @@ public class BullSplitController {
         redirect.addFlashAttribute("message", "BullSplit deleted.");
         return "redirect:/splits";
     }
+
+    @GetMapping("/saved")
+    public String saved(Principal principal, Model model) {
+        User user = user(principal);
+        model.addAttribute("saved", splitService.saved(user.getId()));
+        model.addAttribute("held", splitService.heldCount(user.getId()));
+        model.addAttribute("heldLimit", SplitLimits.describe(SplitLimits.maxHeld(user.getRole())));
+        return "split/saved";
+    }
+
+    @PostMapping("/{id}/publish")
+    public String publish(@PathVariable Long id, Principal principal, RedirectAttributes redirect) {
+        try {
+            splitService.publish(user(principal), id);
+            redirect.addFlashAttribute("message", "Published. Everyone can find it in Browse now.");
+        } catch (SplitException e) {
+            redirect.addFlashAttribute("error", e.getMessage());
+        }
+        return builder(id);
+    }
+
+    @PostMapping("/{id}/unpublish")
+    public String unpublish(@PathVariable Long id, Principal principal, RedirectAttributes redirect) {
+        splitService.unpublish(id, user(principal).getId());
+        redirect.addFlashAttribute("message", "Unpublished. Anyone who already saved it keeps their copy.");
+        return builder(id);
+    }
 }

@@ -3,6 +3,7 @@ package com.bullfitapp.bullfit.split;
 import com.bullfitapp.bullfit.exercise.Exercise;
 import com.bullfitapp.bullfit.exercise.ExerciseRepository;
 import com.bullfitapp.bullfit.user.User;
+import com.bullfitapp.bullfit.user.UserRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,6 +11,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -21,14 +23,16 @@ public class BullSplitService {
     private final SplitDayRepository dayRepository;
     private final SplitDayExerciseRepository sdeRepository;
     private final ExerciseRepository exerciseRepository;
+    private final UserRepository userRepository;
 
     public BullSplitService(BullSplitRepository splitRepository, SplitDayRepository dayRepository,
                             SplitDayExerciseRepository sdeRepository,
-                            ExerciseRepository exerciseRepository) {
+                            ExerciseRepository exerciseRepository, UserRepository userRepository) {
         this.splitRepository = splitRepository;
         this.dayRepository = dayRepository;
         this.sdeRepository = sdeRepository;
         this.exerciseRepository = exerciseRepository;
+        this.userRepository = userRepository;
     }
 
     // ----- reading -----
@@ -84,7 +88,8 @@ public class BullSplitService {
                 }).toList())).toList();
 
         return new SplitView(split.getId(), split.getOwnerId(), split.getName(), split.getDescription(),
-                split.getDayCount(), split.isPublished(), split.isCopy(), split.getCopiedFromId(), dayViews);
+                split.getDayCount(), split.isPublished(), split.isLocked(), split.isCopy(),
+                split.getCopiedFromId(), dayViews);
     }
 
     // ----- creating and editing -----
@@ -212,6 +217,154 @@ public class BullSplitService {
     public void delete(Long splitId, Long userId) {
         // 6c will refuse (and archive instead) when a split has been run.
         splitRepository.delete(owned(splitId, userId)); // the database cascades days and exercises
+    }
+
+    // ----- publishing -----
+
+    @Transactional
+    public void publish(User user, Long splitId) {
+        BullSplit split = owned(splitId, user.getId());
+        if (split.isCopy()) {
+            throw new SplitException("Saved copies can't be published.");
+        }
+        if (split.isLocked()) {
+            throw new SplitException("A moderator unpublished this BullSplit, so it can't be published again.");
+        }
+        if (split.isPublished()) return;
+        int limit = SplitLimits.maxPublished(user.getRole());
+        if (splitRepository.countByOwnerIdAndPublishedTrueAndArchivedFalse(user.getId()) >= limit) {
+            throw new SplitException("You've reached your limit of " + SplitLimits.describe(limit)
+                    + " published BullSplits. Unpublish one first.");
+        }
+
+        SplitView view = buildView(split);
+        for (SplitDayView day : view.days()) {
+            if (day.exercises().isEmpty()) {
+                throw new SplitException(day.displayLabel() + " has no exercises. Every day needs at least one to publish.");
+            }
+        }
+        List<String> customs = view.days().stream()
+                .flatMap(d -> d.exercises().stream())
+                .filter(SplitExerciseView::custom)
+                .map(SplitExerciseView::name).distinct().toList();
+        if (!customs.isEmpty()) {
+            throw new SplitException("Published splits can only use master-list exercises. "
+                    + "Swap out or submit these for the master list first: " + String.join(", ", customs) + ".");
+        }
+        split.setPublished(true);
+        splitRepository.save(split);
+    }
+
+    @Transactional
+    public void unpublish(Long splitId, Long userId) {
+        BullSplit split = owned(splitId, userId);
+        split.setPublished(false);
+        splitRepository.save(split);
+    }
+
+    /** Moderation: unpublish any split and stop its owner from republishing it. */
+    @Transactional
+    public void moderatorUnpublish(Long splitId) {
+        BullSplit split = splitRepository.findById(splitId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        split.setPublished(false);
+        split.setLocked(true);
+        splitRepository.save(split);
+    }
+
+// ----- browsing, previewing, saving -----
+
+    @Transactional(readOnly = true)
+    public PublicSplit viewPublic(Long splitId, Long viewerId) {
+        BullSplit split = splitRepository.findByIdAndPublishedTrueAndArchivedFalseAndLockedFalse(splitId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        User owner = userRepository.findById(split.getOwnerId()).orElseThrow();
+        return new PublicSplit(buildView(split), owner.getUsername(), owner.getDisplayColor(),
+                owner.getDisplayPrefix(), owner.getRole().getColor(),
+                splitRepository.countByCopiedFromId(splitId),
+                split.getOwnerId().equals(viewerId),
+                splitRepository.existsByOwnerIdAndCopiedFromIdAndArchivedFalse(viewerId, splitId));
+    }
+
+    @Transactional
+    public Long saveCopy(User user, Long splitId) {
+        BullSplit original = splitRepository.findByIdAndPublishedTrueAndArchivedFalseAndLockedFalse(splitId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        if (original.getOwnerId().equals(user.getId())) {
+            throw new SplitException("That's your own BullSplit.");
+        }
+        if (splitRepository.existsByOwnerIdAndCopiedFromIdAndArchivedFalse(user.getId(), splitId)) {
+            throw new SplitException("You've already saved this BullSplit.");
+        }
+        int limit = SplitLimits.maxHeld(user.getRole());
+        if (splitRepository.countByOwnerIdAndArchivedFalse(user.getId()) >= limit) {
+            throw new SplitException("You've reached your limit of " + SplitLimits.describe(limit)
+                    + " BullSplits. Delete one to make room.");
+        }
+
+        BullSplit copy = new BullSplit();
+        copy.setOwnerId(user.getId());
+        copy.setName(original.getName());
+        copy.setDescription(original.getDescription());
+        copy.setDayCount(original.getDayCount());
+        copy.setCopy(true);
+        copy.setCopiedFromId(original.getId());
+        splitRepository.save(copy);
+
+        for (SplitDay day : dayRepository.findBySplitIdOrderByDayNumber(original.getId())) {
+            SplitDay newDay = new SplitDay();
+            newDay.setSplitId(copy.getId());
+            newDay.setDayNumber(day.getDayNumber());
+            newDay.setLabel(day.getLabel());
+            dayRepository.save(newDay);
+
+            for (SplitDayExercise sde : sdeRepository.findBySplitDayIdOrderByOrderIndex(day.getId())) {
+                SplitDayExercise newSde = new SplitDayExercise();
+                newSde.setSplitDayId(newDay.getId());
+                newSde.setExerciseId(sde.getExerciseId());
+                newSde.setOrderIndex(sde.getOrderIndex());
+                newSde.setTargetSets(sde.getTargetSets());
+                newSde.setTargetReps(sde.getTargetReps());
+                sdeRepository.save(newSde);
+            }
+        }
+        return copy.getId();
+    }
+
+    @Transactional(readOnly = true)
+    public List<SavedItem> saved(Long userId) {
+        List<BullSplit> copies = splitRepository.findByOwnerIdAndCopyTrueAndArchivedFalseOrderByCreatedAtDesc(userId);
+        if (copies.isEmpty()) return List.of();
+
+        Map<Long, Long> counts = sdeRepository.countBySplit(copies.stream().map(BullSplit::getId).toList())
+                .stream().collect(Collectors.toMap(SplitExerciseCount::splitId, SplitExerciseCount::total));
+
+        Map<Long, BullSplit> originals = splitRepository.findAllById(copies.stream()
+                        .map(BullSplit::getCopiedFromId).filter(Objects::nonNull).toList()).stream()
+                .collect(Collectors.toMap(BullSplit::getId, o -> o));
+        Map<Long, String> owners = userRepository.findAllById(originals.values().stream()
+                        .map(BullSplit::getOwnerId).toList()).stream()
+                .collect(Collectors.toMap(User::getId, User::getUsername));
+
+        return copies.stream().map(c -> {
+            BullSplit original = c.getCopiedFromId() == null ? null : originals.get(c.getCopiedFromId());
+            String basedOn = original == null ? null
+                    : original.getName() + " by " + owners.getOrDefault(original.getOwnerId(), "a user");
+            return new SavedItem(c.getId(), c.getName(), c.getDayCount(), counts.getOrDefault(c.getId(), 0L), basedOn);
+        }).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<SplitListItem> publishedBy(Long userId) {
+        List<BullSplit> splits = splitRepository
+                .findByOwnerIdAndPublishedTrueAndArchivedFalseAndLockedFalseOrderByCreatedAtDesc(userId);
+        if (splits.isEmpty()) return List.of();
+        Map<Long, Long> counts = sdeRepository.countBySplit(splits.stream().map(BullSplit::getId).toList())
+                .stream().collect(Collectors.toMap(SplitExerciseCount::splitId, SplitExerciseCount::total));
+        return splits.stream()
+                .map(s -> new SplitListItem(s.getId(), s.getName(), s.getDayCount(), true,
+                        counts.getOrDefault(s.getId(), 0L)))
+                .toList();
     }
 
     // ----- helpers -----

@@ -15,6 +15,26 @@
   <p class="message" th:if="${message}" th:text="${message}"></p>
   <p class="error" th:if="${error}" th:text="${error}"></p>
 
+  <div class="we-card" th:unless="${split.copy}">
+    <p class="error" th:if="${split.locked}">
+      A moderator unpublished this BullSplit, so it can't be published again.
+    </p>
+    <div th:unless="${split.locked}">
+      <form th:if="${!split.published}" th:action="@{/splits/{id}/publish(id=${split.id})}" method="post">
+        <button type="submit" class="primary">Publish</button>
+        <span class="muted">Needs at least one exercise on every day, and master-list exercises only.</span>
+      </form>
+      <div th:if="${split.published}">
+        <span class="message">Published.</span>
+        <a th:href="@{/browse/{id}(id=${split.id})}">View public page</a>
+        <form th:action="@{/splits/{id}/unpublish(id=${split.id})}" method="post" style="display:inline">
+          <button type="submit" class="link-button">Unpublish</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <p class="muted" th:if="${split.copy}">This is a saved copy. You can edit it freely, but it can't be published.</p>
+
   <details>
     <summary>Edit name and description</summary>
     <form th:action="@{/splits/{id}/details(id=${split.id})}" method="post" class="log-form">

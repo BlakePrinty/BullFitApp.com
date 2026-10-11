@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title th:text="${pub.split.name} + ' - BullFit'">BullSplit</title>
+  <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<main>
+  <p><a th:href="@{/browse}">&laquo; Browse</a></p>
+  <h1 th:text="${pub.split.name}"></h1>
+  <p class="muted">
+    <span th:text="${pub.split.dayCount} + ' days | ' + ${pub.split.totalExercises()} + ' exercises'"></span> |
+    by
+    <a th:href="@{/profile/{u}(u=${pub.publisher})}">
+            <span th:if="${pub.publisherPrefix != null}" th:text="${pub.publisherPrefix}"
+                  th:style="'color:' + ${pub.prefixColor}"></span>
+      <span th:text="${pub.publisher}" th:style="'color:' + ${pub.publisherColor}"></span>
+    </a>
+    | <span th:text="${pub.copyCount} + ' saved'"></span>
+  </p>
+  <p th:if="${pub.split.description != null}" th:text="${pub.split.description}"></p>
+
+  <p class="message" th:if="${message}" th:text="${message}"></p>
+  <p class="error" th:if="${error}" th:text="${error}"></p>
+
+  <div class="workout-actions">
+    <form th:if="${!pub.mine and !pub.alreadySaved}"
+          th:action="@{/browse/{id}/save(id=${pub.split.id})}" method="post">
+      <button type="submit" class="primary">Save to my plan</button>
+    </form>
+    <span class="muted" th:if="${pub.alreadySaved}">
+            You've saved this. <a th:href="@{/splits/saved}">View saved</a>
+        </span>
+    <span class="muted" th:if="${pub.mine}">
+            This is your BullSplit. <a th:href="@{/splits/{id}(id=${pub.split.id})}">Edit</a>
+        </span>
+    <form sec:authorize="hasAnyRole('ADMIN','DEVELOPER')"
+          th:action="@{/admin/splits/{id}/unpublish(id=${pub.split.id})}" method="post"
+          onsubmit="return confirm('Unpublish this BullSplit and stop its owner from republishing it?');">
+      <button type="submit" class="link-button">Unpublish (moderation)</button>
+    </form>
+  </div>
+
+  <section class="we-card" th:each="day : ${pub.split.days}">
+    <h3 th:text="${day.displayLabel()}"></h3>
+    <table class="exercise-table">
+      <tbody>
+      <tr th:each="ex : ${day.exercises}">
+        <td>
+          <span th:text="${ex.name}"></span><br>
+          <span class="muted"
+                th:text="${ex.muscleGroup.displayName} + ' | ' + ${ex.equipment.displayName}"></span>
+        </td>
+        <td th:text="${ex.targetsDisplay()}"></td>
+      </tr>
+      </tbody>
+    </table>
+  </section>
+</main>
+</body>
+</html>
