@@ -8,7 +8,16 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public record WorkoutView(Long id, WorkoutStatus status, LocalDateTime startedAt,
-                          LocalDateTime endedAt, List<WorkoutExerciseView> exercises) {
+                          LocalDateTime endedAt, String splitTitle,
+                          List<WorkoutExerciseView> exercises) {
+
+    public long completedCount() {
+        return exercises.stream().filter(e -> e.status() != WorkoutExerciseStatus.SKIPPED).count();
+    }
+
+    public long skippedCount() {
+        return exercises.stream().filter(e -> e.status() == WorkoutExerciseStatus.SKIPPED).count();
+    }
 
     public int totalSets() {
         return exercises.stream().mapToInt(e -> e.sets().size()).sum();

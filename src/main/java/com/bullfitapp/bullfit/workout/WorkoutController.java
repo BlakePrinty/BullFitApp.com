@@ -3,6 +3,8 @@ package com.bullfitapp.bullfit.workout;
 import com.bullfitapp.bullfit.exercise.Equipment;
 import com.bullfitapp.bullfit.exercise.ExerciseService;
 import com.bullfitapp.bullfit.exercise.MuscleGroup;
+import com.bullfitapp.bullfit.split.SplitException;
+import com.bullfitapp.bullfit.split.SplitRunService;
 import com.bullfitapp.bullfit.user.User;
 import com.bullfitapp.bullfit.user.UserRepository;
 import org.springframework.stereotype.Controller;
@@ -25,14 +27,16 @@ public class WorkoutController {
     private final ExerciseService exerciseService;
     private final UserRepository userRepository;
     private final PersonalRecordService recordService;
+    private final SplitRunService splitRunService;
 
     public WorkoutController(WorkoutService workoutService, WorkoutHistoryService historyService,
-                             ExerciseService exerciseService, UserRepository userRepository, PersonalRecordService recordService) {
+                             ExerciseService exerciseService, UserRepository userRepository, PersonalRecordService recordService, SplitRunService splitRunService) {
         this.workoutService = workoutService;
         this.historyService = historyService;
         this.exerciseService = exerciseService;
         this.userRepository = userRepository;
         this.recordService = recordService;
+        this.splitRunService = splitRunService;
     }
 
     private User user(Principal principal) {
@@ -72,9 +76,22 @@ public class WorkoutController {
         User user = user(principal);
         model.addAttribute("inProgressId",
                 workoutService.findInProgress(user.getId()).map(Workout::getId).orElse(null));
+        model.addAttribute("activeRun", splitRunService.activeView(user.getId()));
         model.addAttribute("history", historyService.history(user.getId(), user.getRole(), Math.max(page, 0)));
         model.addAttribute("freeDays", WorkoutHistoryService.FREE_HISTORY_DAYS);
         return "workout/home";
+    }
+
+    @PostMapping("/start-day")
+    public String startDay(@RequestParam(required = false) Integer day, Principal principal,
+                           RedirectAttributes redirect) {
+        try {
+            Long workoutId = splitRunService.startDayWorkout(userId(principal), day);
+            return "redirect:/workouts/" + workoutId;
+        } catch (SplitException e) {
+            redirect.addFlashAttribute("error", e.getMessage());
+            return "redirect:/workouts";
+        }
     }
 
     @PostMapping("/start")

@@ -35,6 +35,20 @@
   </div>
   <p class="muted" th:if="${split.copy}">This is a saved copy. You can edit it freely, but it can't be published.</p>
 
+  <div class="we-card">
+    <p th:if="${activeSplitId != null and activeSplitId == split.id}" class="message">
+      This is your active BullSplit. <a th:href="@{/workouts}">Go to Workouts</a>
+    </p>
+    <p th:if="${activeSplitId != null and activeSplitId != split.id}" class="muted">
+      You have another BullSplit running. Stop it on the Workouts page to start this one.
+    </p>
+    <form th:if="${activeSplitId == null}" th:action="@{/splits/{id}/start(id=${split.id})}"
+          method="post" class="log-form">
+      <input type="number" name="weeks" min="1" max="52" placeholder="Weeks (optional)" style="width:9rem">
+      <button type="submit" class="primary">Start this BullSplit</button>
+    </form>
+  </div>
+
   <details>
     <summary>Edit name and description</summary>
     <form th:action="@{/splits/{id}/details(id=${split.id})}" method="post" class="log-form">

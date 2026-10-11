@@ -11,9 +11,11 @@
 <main>
     <h1>Workout complete</h1>
     <p class="muted" th:text="${@dt.dateTime(workout.startedAt(), currentUser.timeZone)}"></p>
+    <p class="muted" th:if="${workout.splitTitle() != null}" th:text="${workout.splitTitle()}"></p>
     <div class="stats">
         <div><strong th:text="${workout.durationMinutes()}"></strong> <span class="muted">minutes</span></div>
-        <div><strong th:text="${#lists.size(workout.exercises)}"></strong> <span class="muted">exercises</span></div>
+        <div><strong th:text="${workout.completedCount()}"></strong> <span class="muted">exercises</span></div>
+        <div th:if="${workout.skippedCount() > 0}"><strong th:text="${workout.skippedCount()}"></strong> <span class="muted">skipped</span></div>
         <div><strong th:text="${workout.totalSets()}"></strong> <span class="muted">sets</span></div>
         <div><strong th:text="${workout.totalVolumeDisplay()}"></strong> <span class="muted">lbs total volume</span></div>
     </div>
@@ -27,8 +29,9 @@
 
     <section class="we-card" th:each="ex : ${workout.exercises}">
         <h3 th:text="${ex.name}"></h3>
-        <p th:if="${!ex.cardio}" th:text="${ex.setsSummary()}"></p>
-        <p th:if="${ex.cardio}" th:text="${ex.cardioSummary()}"></p>
+        <p class="muted" th:if="${ex.status().name() == 'SKIPPED'}">Skipped</p>
+        <p th:if="${!ex.cardio() and ex.status().name() != 'SKIPPED'}" th:text="${ex.setsSummary()}"></p>
+        <p th:if="${ex.cardio() and ex.status().name() != 'SKIPPED'}" th:text="${ex.cardioSummary()}"></p>
     </section>
 
     <div class="workout-actions">

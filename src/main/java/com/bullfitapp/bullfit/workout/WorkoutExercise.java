@@ -18,6 +18,15 @@ public class WorkoutExercise {
     @Column(name = "order_index", nullable = false)
     private int orderIndex;
 
+    @Column(name = "planned", nullable = false) private boolean planned = false;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private WorkoutExerciseStatus status = WorkoutExerciseStatus.COMPLETED;
+
+    @Column(name = "target_text") private String targetText;
+    @Column(name = "swapped_from_id") private Long swappedFromId;
+
     public Long getId() {
         return id;
     }
@@ -48,5 +57,37 @@ public class WorkoutExercise {
 
     public void setOrderIndex(int orderIndex) {
         this.orderIndex = orderIndex;
+    }
+
+    public boolean isPlanned() {
+        return planned;
+    }
+
+    public void setPlanned(boolean planned) {
+        this.planned = planned;
+    }
+
+    public WorkoutExerciseStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(WorkoutExerciseStatus status) {
+        this.status = status;
+    }
+
+    public String getTargetText() {
+        return targetText;
+    }
+
+    public void setTargetText(String targetText) {
+        this.targetText = targetText;
+    }
+
+    public Long getSwappedFromId() {
+        return swappedFromId;
+    }
+
+    public void setSwappedFromId(Long swappedFromId) {
+        this.swappedFromId = swappedFromId;
     }
 }

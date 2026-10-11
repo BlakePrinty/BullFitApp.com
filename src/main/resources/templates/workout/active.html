@@ -10,6 +10,7 @@
 <div th:replace="~{fragments/navbar :: navbar}"></div>
 <main>
     <h1 th:text="${editing} ? 'Edit workout' : 'Workout in progress'">Workout</h1>
+    <p class="muted" th:if="${workout.splitTitle() != null}" th:text="${workout.splitTitle()}"></p>
     <p class="error" th:if="${error}" th:text="${error}"></p>
 
     <p class="muted" th:if="${#lists.isEmpty(workout.exercises)}">
@@ -22,10 +23,13 @@
                 <h3 th:text="${ex.name}"></h3>
                 <span class="muted"
                       th:text="${ex.muscleGroup.displayName} + ' | ' + ${ex.equipment.displayName}"></span>
+                <span th:if="${ex.targetText() != null}" class="badge" th:text="'Target ' + ${ex.targetText()}"></span>
             </div>
-            <form th:action="@{/workouts/{id}/exercises/{weId}/remove(id=${workout.id},weId=${ex.id})}"
-                  method="post">
-                <button type="submit" class="link-button">Remove</button>
+            <form th:unless="${ex.planned()}" th:action="@{/workouts/{id}/exercises/{weId}/remove(id=${workout.id},weId=${ex.id})}" method="post">
+                <form th:action="@{/workouts/{id}/exercises/{weId}/remove(id=${workout.id},weId=${ex.id})}"
+                      method="post">
+                    <button type="submit" class="link-button">Remove</button>
+                </form>
             </form>
         </div>
 

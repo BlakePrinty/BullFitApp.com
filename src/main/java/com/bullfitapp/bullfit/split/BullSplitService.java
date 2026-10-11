@@ -24,15 +24,17 @@ public class BullSplitService {
     private final SplitDayExerciseRepository sdeRepository;
     private final ExerciseRepository exerciseRepository;
     private final UserRepository userRepository;
+    private final UserSplitRepository userSplitRepository;
 
     public BullSplitService(BullSplitRepository splitRepository, SplitDayRepository dayRepository,
                             SplitDayExerciseRepository sdeRepository,
-                            ExerciseRepository exerciseRepository, UserRepository userRepository) {
+                            ExerciseRepository exerciseRepository, UserRepository userRepository, UserSplitRepository userSplitRepository) {
         this.splitRepository = splitRepository;
         this.dayRepository = dayRepository;
         this.sdeRepository = sdeRepository;
         this.exerciseRepository = exerciseRepository;
         this.userRepository = userRepository;
+        this.userSplitRepository = userSplitRepository;
     }
 
     // ----- reading -----
@@ -213,10 +215,18 @@ public class BullSplitService {
         sdeRepository.save(b);
     }
 
+    /** Returns true if the split was archived (it has run history), false if it was deleted. */
     @Transactional
-    public void delete(Long splitId, Long userId) {
-        // 6c will refuse (and archive instead) when a split has been run.
-        splitRepository.delete(owned(splitId, userId)); // the database cascades days and exercises
+    public boolean delete(Long splitId, Long userId) {
+        BullSplit split = owned(splitId, userId);
+        if (userSplitRepository.existsBySplitId(splitId)) {
+            split.setArchived(true);
+            split.setPublished(false);
+            splitRepository.save(split);
+            return true;
+        }
+        splitRepository.delete(split); // the database cascades days and exercises
+        return false;
     }
 
     // ----- publishing -----
@@ -366,6 +376,8 @@ public class BullSplitService {
                         counts.getOrDefault(s.getId(), 0L)))
                 .toList();
     }
+
+
 
     // ----- helpers -----
 

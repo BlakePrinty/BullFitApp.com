@@ -26,12 +26,14 @@ public class BullSplitController {
     private final BullSplitService splitService;
     private final ExerciseService exerciseService;
     private final UserRepository userRepository;
+    private final SplitRunService splitRunService;
 
     public BullSplitController(BullSplitService splitService, ExerciseService exerciseService,
-                               UserRepository userRepository) {
+                               UserRepository userRepository, SplitRunService splitRunService) {
         this.splitService = splitService;
         this.exerciseService = exerciseService;
         this.userRepository = userRepository;
+        this.splitRunService = splitRunService;
     }
 
     private User user(Principal principal) {
@@ -78,6 +80,8 @@ public class BullSplitController {
     @GetMapping("/{id}")
     public String builderPage(@PathVariable Long id, Principal principal, Model model) {
         model.addAttribute("split", splitService.viewOwned(id, user(principal).getId()));
+        model.addAttribute("activeSplitId",
+                splitRunService.findActive(user(principal).getId()).map(UserSplit::getSplitId).orElse(null));
         return "split/builder";
     }
 
@@ -183,8 +187,10 @@ public class BullSplitController {
 
     @PostMapping("/{id}/delete")
     public String delete(@PathVariable Long id, Principal principal, RedirectAttributes redirect) {
-        splitService.delete(id, user(principal).getId());
-        redirect.addFlashAttribute("message", "BullSplit deleted.");
+        boolean archived = splitService.delete(id, user(principal).getId());
+        redirect.addFlashAttribute("message", archived
+                ? "That BullSplit has workout history, so it was archived instead of deleted."
+                : "BullSplit deleted.");
         return "redirect:/splits";
     }
 
@@ -213,5 +219,18 @@ public class BullSplitController {
         splitService.unpublish(id, user(principal).getId());
         redirect.addFlashAttribute("message", "Unpublished. Anyone who already saved it keeps their copy.");
         return builder(id);
+    }
+
+    @PostMapping("/{id}/start")
+    public String start(@PathVariable Long id, @RequestParam(required = false) Integer weeks,
+                        Principal principal, RedirectAttributes redirect) {
+        try {
+            splitRunService.start(user(principal).getId(), id, weeks);
+            redirect.addFlashAttribute("message", "BullSplit started. Your first workout is on the Workouts page.");
+            return "redirect:/workouts";
+        } catch (SplitException e) {
+            redirect.addFlashAttribute("error", e.getMessage());
+            return builder(id);
+        }
     }
 }
