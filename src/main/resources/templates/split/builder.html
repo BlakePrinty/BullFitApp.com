@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title th:text="${split.name} + ' - BullFit'">BullSplit</title>
+  <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<main>
+  <p><a th:href="@{/splits}">&laquo; My BullSplits</a></p>
+  <h1 th:text="${split.name}"></h1>
+  <p class="muted" th:text="${split.dayCount} + ' days | ' + ${split.totalExercises()} + ' exercises | ' + (${split.published} ? 'Published' : 'Private')"></p>
+  <p class="message" th:if="${message}" th:text="${message}"></p>
+  <p class="error" th:if="${error}" th:text="${error}"></p>
+
+  <details>
+    <summary>Edit name and description</summary>
+    <form th:action="@{/splits/{id}/details(id=${split.id})}" method="post" class="log-form">
+      <input type="text" name="name" th:value="${split.name}" maxlength="60" required>
+      <input type="text" name="description" th:value="${split.description}" maxlength="300"
+             placeholder="Description (optional)">
+      <button type="submit">Save</button>
+    </form>
+  </details>
+  <p th:if="${split.description != null}" th:text="${split.description}"></p>
+
+  <section class="we-card" th:each="day : ${split.days}" th:id="'day-' + ${day.id}">
+    <h3 th:text="${day.displayLabel()}"></h3>
+
+    <form th:action="@{/splits/{id}/days/{dayId}/label(id=${split.id},dayId=${day.id})}"
+          method="post" class="log-form">
+      <input type="text" name="label" th:value="${day.label}" maxlength="40"
+             placeholder="Day label (optional), e.g. Push">
+      <button type="submit">Rename</button>
+    </form>
+
+    <p class="muted" th:if="${#lists.isEmpty(day.exercises)}">No exercises yet.</p>
+
+    <table class="exercise-table" th:unless="${#lists.isEmpty(day.exercises)}">
+      <tbody>
+      <tr th:each="ex : ${day.exercises}">
+        <td>
+          <span th:text="${ex.name}"></span>
+          <span th:if="${ex.custom}" class="badge">Custom</span><br>
+          <span class="muted"
+                th:text="${ex.muscleGroup.displayName} + ' | ' + ${ex.equipment.displayName}"></span>
+        </td>
+        <td>
+          <form class="log-form"
+                th:action="@{/splits/{id}/days/{dayId}/exercises/{sdeId}/targets(id=${split.id},dayId=${day.id},sdeId=${ex.id})}"
+                method="post">
+            <input type="number" name="targetSets" min="1" max="20" th:value="${ex.targetSets}"
+                   placeholder="Sets" style="width:4.5rem">
+            <input type="text" name="targetReps" maxlength="20" th:value="${ex.targetReps}"
+                   placeholder="Reps e.g. 8-12" style="width:8rem">
+            <button type="submit">Set</button>
+          </form>
+        </td>
+        <td class="row-actions">
+          <form th:action="@{/splits/{id}/days/{dayId}/exercises/{sdeId}/up(id=${split.id},dayId=${day.id},sdeId=${ex.id})}" method="post">
+            <button type="submit" class="link-button" title="Move up">&uarr;</button>
+          </form>
+          <form th:action="@{/splits/{id}/days/{dayId}/exercises/{sdeId}/down(id=${split.id},dayId=${day.id},sdeId=${ex.id})}" method="post">
+            <button type="submit" class="link-button" title="Move down">&darr;</button>
+          </form>
+          <form th:action="@{/splits/{id}/days/{dayId}/exercises/{sdeId}/remove(id=${split.id},dayId=${day.id},sdeId=${ex.id})}" method="post">
+            <button type="submit" class="link-button">Remove</button>
+          </form>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+
+    <p><a class="button" th:href="@{/splits/{id}/days/{dayId}/add-exercise(id=${split.id},dayId=${day.id})}">+ Add exercise</a></p>
+  </section>
+
+  <form th:action="@{/splits/{id}/delete(id=${split.id})}" method="post"
+        onsubmit="return confirm('Delete this BullSplit permanently?');">
+    <button type="submit" class="link-button">Delete BullSplit</button>
+  </form>
+</main>
+</body>
+</html>

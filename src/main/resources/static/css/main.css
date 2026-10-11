@@ -35,3 +35,12 @@ main { padding: 2rem; }
 .range-buttons button { background: #1d2027; color: #e8e8e8; border: 1px solid #2a2d34;
     border-radius: 6px; padding: .4rem .8rem; cursor: pointer; }
 .range-buttons button.active { background: #2d6cdf; border-color: #2d6cdf; color: #fff; }
+
+
+.tabs { display: flex; gap: 1rem; margin: .5rem 0 1rem; border-bottom: 1px solid #2a2d34; }
+.tabs a { padding: .5rem .25rem; text-decoration: none; color: #8b8f98; }
+.tabs a.active { color: #e8e8e8; border-bottom: 2px solid #2d6cdf; }
+.row-actions { display: flex; gap: .5rem; align-items: center; }
+details { margin: .75rem 0; }
+
+
