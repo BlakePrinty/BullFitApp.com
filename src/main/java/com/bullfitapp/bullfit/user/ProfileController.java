@@ -1,6 +1,7 @@
 package com.bullfitapp.bullfit.user;
 
 import com.bullfitapp.bullfit.common.ZoneOptions;
+import com.bullfitapp.bullfit.split.BullSplitService;
 import com.bullfitapp.bullfit.workout.PersonalRecordService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -21,11 +22,13 @@ public class ProfileController {
     private final UserRepository userRepository;
     private final UserService userService;
     private final PersonalRecordService recordService;
+    private final BullSplitService bullSplitService;
 
-    public ProfileController(UserRepository userRepository, UserService userService, PersonalRecordService recordService) {
+    public ProfileController(UserRepository userRepository, UserService userService, PersonalRecordService recordService, BullSplitService bullSplitService) {
         this.userRepository = userRepository;
         this.userService = userService;
         this.recordService = recordService;
+        this.bullSplitService = bullSplitService;
     }
 
     @GetMapping("/profile")
@@ -40,6 +43,7 @@ public class ProfileController {
         model.addAttribute("profileUser", user);
         model.addAttribute("isOwner", user.getUsername().equals(principal.getName()));
         model.addAttribute("pinnedRecords", recordService.pinned(user.getId()));
+        model.addAttribute("publishedSplits", bullSplitService.publishedBy(user.getId()));
         return "user/profile";
     }
 

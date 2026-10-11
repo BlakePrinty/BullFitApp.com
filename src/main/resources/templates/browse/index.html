@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Browse BullSplits - BullFit</title>
+  <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<main>
+  <h1>BullSplits</h1>
+  <div th:replace="~{fragments/split-tabs :: tabs('browse')}"></div>
+
+  <p class="message" th:if="${message}" th:text="${message}"></p>
+  <p class="error" th:if="${error}" th:text="${error}"></p>
+
+  <form th:action="@{/browse}" method="get" class="filters">
+    <input type="text" name="q" th:value="${q}" placeholder="Search by name or publisher">
+    <select name="days">
+      <option value="">Any length</option>
+      <option th:each="n : ${#numbers.sequence(1, 8)}" th:value="${n}"
+              th:text="${n} + (${n} == 1 ? ' day' : ' days')"
+              th:selected="${days != null and days == n}"></option>
+    </select>
+    <select name="sort">
+      <option value="newest" th:selected="${sort == 'newest'}">Newest</option>
+      <option value="popular" th:selected="${sort == 'popular'}">Most saved</option>
+    </select>
+    <button type="submit">Filter</button>
+    <a th:href="@{/browse}">Clear</a>
+  </form>
+
+  <p class="muted" th:text="${total} + ' BullSplit(s)'"></p>
+  <p class="muted" th:if="${#lists.isEmpty(rows)}">Nothing matches. Try a different search.</p>
+
+  <div class="request-card" th:each="r : ${rows}">
+    <h3><a th:href="@{/browse/{id}(id=${r.id})}" th:text="${r.name}"></a></h3>
+    <p class="muted">
+      <span th:text="${r.dayCount} + (${r.dayCount} == 1 ? ' day' : ' days')"></span> |
+      by
+      <a th:href="@{/profile/{u}(u=${r.publisher})}">
+                <span th:if="${r.publisherPrefix() != null}" th:text="${r.publisherPrefix()}"
+                      th:style="'color:' + ${r.prefixColor()}"></span>
+        <span th:text="${r.publisher}" th:style="'color:' + ${r.publisherColor()}"></span>
+      </a>
+      | <span th:text="${r.copyCount} + ' saved'"></span>
+    </p>
+    <p th:if="${r.description != null}" th:text="${r.description}"></p>
+  </div>
+
+  <p>
+    <a th:if="${hasPrevious}"
+       th:href="@{/browse(q=${q},days=${days},sort=${sort},page=${page - 1})}">&laquo; Previous</a>
+    <a th:if="${hasNext}"
+       th:href="@{/browse(q=${q},days=${days},sort=${sort},page=${page + 1})}">Next &raquo;</a>
+  </p>
+</main>
+</body>
+</html>

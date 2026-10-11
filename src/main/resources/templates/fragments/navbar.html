@@ -15,6 +15,7 @@
         <a th:href="@{/workouts}">Workout</a>
         <a th:href="@{/records}">Records</a>
         <a th:href="@{/splits}">BullSplits</a>
+        <a th:href="@{/browse}">Browse</a>
         <a sec:authorize="hasAnyRole('ADMIN','DEVELOPER')" th:href="@{/admin/exercises}">Admin</a>
         <a th:href="@{/profile}">
             <span th:replace="~{fragments/username :: username(${currentUser})}"></span>

@@ -10,9 +10,7 @@
 <div th:replace="~{fragments/navbar :: navbar}"></div>
 <main>
   <h1>BullSplits</h1>
-  <nav class="tabs">
-    <a class="active" th:href="@{/splits}">My BullSplits</a>
-  </nav>
+  <div th:replace="~{fragments/split-tabs :: tabs('my')}"></div>
 
   <p class="message" th:if="${message}" th:text="${message}"></p>
   <p class="error" th:if="${error}" th:text="${error}"></p>
