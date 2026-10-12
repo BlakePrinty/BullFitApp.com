@@ -40,6 +40,8 @@
               onsubmit="return confirm('Stop this BullSplit? It will move to your completed splits.');">
             <button type="submit" class="link-button">Stop this BullSplit</button>
         </form>
+
+        <a th:href="@{/runs/{id}(id=${activeRun.runId()})}">View progress</a>
     </section>
 
     <div th:if="${activeRun == null and inProgressId != null}">

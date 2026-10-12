@@ -29,6 +29,7 @@
 
     <section class="we-card" th:each="ex : ${workout.exercises}">
         <h3 th:text="${ex.name}"></h3>
+        <p class="muted" th:if="${ex.swappedFromName() != null}" th:text="'Swapped from ' + ${ex.swappedFromName()}"></p>
         <p class="muted" th:if="${ex.status().name() == 'SKIPPED'}">Skipped</p>
         <p th:if="${!ex.cardio() and ex.status().name() != 'SKIPPED'}" th:text="${ex.setsSummary()}"></p>
         <p th:if="${ex.cardio() and ex.status().name() != 'SKIPPED'}" th:text="${ex.cardioSummary()}"></p>

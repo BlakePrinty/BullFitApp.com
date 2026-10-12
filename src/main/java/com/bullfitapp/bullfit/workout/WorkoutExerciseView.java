@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 public record WorkoutExerciseView(Long id, Long exerciseId, String name,
                                   MuscleGroup muscleGroup, Equipment equipment, boolean cardio,
                                   boolean planned, WorkoutExerciseStatus status, String targetText,
+                                  String swappedFromName, boolean fromSplit,
                                   List<SetView> sets, List<CardioView> cardioEntries) {
 
     public String setsSummary() {

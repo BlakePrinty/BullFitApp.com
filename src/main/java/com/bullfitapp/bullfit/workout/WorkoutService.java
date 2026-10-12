@@ -12,10 +12,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -128,7 +125,6 @@ public class WorkoutService {
         we.setWorkoutId(workoutId);
         we.setExerciseId(exerciseId);
         we.setOrderIndex(weRepository.maxOrderIndex(workoutId) + 1);
-        weRepository.save(we);
 
         return weRepository.save(we).getId();
     }
@@ -242,10 +238,6 @@ public class WorkoutService {
         List<WorkoutExercise> wes = weRepository.findByWorkoutIdOrderByOrderIndex(workoutId);
         List<Long> weIds = wes.stream().map(WorkoutExercise::getId).toList();
 
-        Map<Long, Exercise> exercises = exerciseRepository
-                .findAllById(wes.stream().map(WorkoutExercise::getExerciseId).toList())
-                .stream().collect(Collectors.toMap(Exercise::getId, e -> e));
-
         Map<Long, List<WorkoutSet>> sets = weIds.isEmpty() ? Map.of()
                 : setRepository.findByWorkoutExerciseIdInOrderBySetNumber(weIds).stream()
                 .collect(Collectors.groupingBy(WorkoutSet::getWorkoutExerciseId));
@@ -254,11 +246,24 @@ public class WorkoutService {
                 .collect(Collectors.groupingBy(CardioEntry::getWorkoutExerciseId));
 
         List<WorkoutExerciseView> views = new ArrayList<>();
+
+        Set<Long> exerciseIds = new HashSet<>();
+        for (WorkoutExercise we : wes) {
+            exerciseIds.add(we.getExerciseId());
+            if (we.getSwappedFromId() != null) exerciseIds.add(we.getSwappedFromId());
+        }
+        Map<Long, Exercise> exercises = exerciseRepository.findAllById(exerciseIds).stream()
+                .collect(Collectors.toMap(Exercise::getId, e -> e));
+
+
         for (WorkoutExercise we : wes) {
             Exercise ex = exercises.get(we.getExerciseId());
+            String swappedFrom = we.getSwappedFromId() == null ? null
+                    : exercises.get(we.getSwappedFromId()).getName();
             views.add(new WorkoutExerciseView(
                     we.getId(), ex.getId(), ex.getName(), ex.getMuscleGroup(), ex.getEquipment(),
                     ex.isCardio(), we.isPlanned(), we.getStatus(), we.getTargetText(),
+                    swappedFrom, we.getSplitDayExerciseId() != null,
                     sets.getOrDefault(we.getId(), List.of()).stream()
                             .map(s -> new SetView(s.getId(), s.getSetNumber(), s.getWeight(), s.getReps())).toList(),
                     cardio.getOrDefault(we.getId(), List.of()).stream()
@@ -316,5 +321,45 @@ public class WorkoutService {
         }
         weRepository.deleteAll(settled.toDrop());
         return false;
+    }
+
+    @Transactional
+    public void swap(Long workoutId, Long userId, Long weId, Long newExerciseId, boolean wholeSplit) {
+        Workout workout = requireInProgress(workoutId, userId);
+        WorkoutExercise we = requireWorkoutExercise(weId, workoutId);
+        if (!we.isPlanned()) {
+            throw new WorkoutException("Only planned exercises can be swapped.");
+        }
+        if (setRepository.countByWorkoutExerciseId(weId) > 0
+                || cardioRepository.countByWorkoutExerciseId(weId) > 0) {
+            throw new WorkoutException(
+                    "You've already logged this exercise. Add the new one as an extra exercise instead.");
+        }
+        Exercise current = exerciseRepository.findById(we.getExerciseId()).orElseThrow();
+        Exercise replacement = exerciseRepository.findById(newExerciseId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        boolean visible = replacement.isActive()
+                && (replacement.getOwnerId() == null || replacement.getOwnerId().equals(userId));
+        if (!visible) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+        if (replacement.getId().equals(current.getId())) {
+            throw new WorkoutException("That's already the exercise in this slot.");
+        }
+        if (replacement.isCardio() != current.isCardio()) {
+            throw new WorkoutException("Swap cardio for cardio, and lifts for lifts.");
+        }
+        if (weRepository.existsByWorkoutIdAndExerciseId(workoutId, newExerciseId)) {
+            throw new WorkoutException("That exercise is already in this workout.");
+        }
+
+        Long original = we.getSwappedFromId() != null ? we.getSwappedFromId() : we.getExerciseId();
+        we.setExerciseId(newExerciseId);
+        we.setSwappedFromId(newExerciseId.equals(original) ? null : original);
+        weRepository.save(we);
+
+        if (wholeSplit && we.getSplitDayExerciseId() != null && workout.getUserSplitId() != null) {
+            splitRunService.applyOverride(workout.getUserSplitId(), we.getSplitDayExerciseId(), newExerciseId);
+        }
     }
 }

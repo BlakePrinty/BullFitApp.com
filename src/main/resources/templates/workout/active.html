@@ -24,12 +24,14 @@
                 <span class="muted"
                       th:text="${ex.muscleGroup.displayName} + ' | ' + ${ex.equipment.displayName}"></span>
                 <span th:if="${ex.targetText() != null}" class="badge" th:text="'Target ' + ${ex.targetText()}"></span>
+                <span class="muted" th:if="${ex.swappedFromName() != null}" th:text="'Swapped from ' + ${ex.swappedFromName()}"></span>
+                <a th:if="${!editing and ex.planned() and #lists.isEmpty(ex.sets()) and #lists.isEmpty(ex.cardioEntries())}"
+                   th:href="@{/workouts/{id}/exercises/{weId}/swap(id=${workout.id},weId=${ex.id})}">Swap</a>
             </div>
-            <form th:unless="${ex.planned()}" th:action="@{/workouts/{id}/exercises/{weId}/remove(id=${workout.id},weId=${ex.id})}" method="post">
-                <form th:action="@{/workouts/{id}/exercises/{weId}/remove(id=${workout.id},weId=${ex.id})}"
-                      method="post">
-                    <button type="submit" class="link-button">Remove</button>
-                </form>
+            <form th:unless="${ex.planned()}"
+                  th:action="@{/workouts/{id}/exercises/{weId}/remove(id=${workout.id},weId=${ex.id})}"
+                  method="post">
+                <button type="submit" class="link-button">Remove</button>
             </form>
         </div>
 
@@ -110,7 +112,13 @@
     <p><a class="button" th:href="@{/workouts/{id}/add-exercise(id=${workout.id})}">+ Add exercise</a></p>
 
     <div class="workout-actions" th:unless="${editing}">
-        <form th:action="@{/workouts/{id}/finish(id=${workout.id})}" method="post">
+        <form th:if="${workout.unfinishedPlanned() > 0}"
+              th:action="@{/workouts/{id}/finish(id=${workout.id})}" method="post"
+              onsubmit="return confirm('Some planned exercises have nothing logged. End the workout now? They will count as skipped.');">
+            <button type="submit" class="primary">End workout early</button>
+        </form>
+        <form th:if="${workout.unfinishedPlanned() == 0}"
+              th:action="@{/workouts/{id}/finish(id=${workout.id})}" method="post">
             <button type="submit" class="primary">Finish workout</button>
         </form>
         <form th:action="@{/workouts/{id}/discard(id=${workout.id})}" method="post"

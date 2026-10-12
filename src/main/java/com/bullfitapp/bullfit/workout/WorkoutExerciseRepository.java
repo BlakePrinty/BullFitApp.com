@@ -24,4 +24,13 @@ public interface WorkoutExerciseRepository extends JpaRepository<WorkoutExercise
         order by we.workoutId, we.orderIndex
         """)
     List<WorkoutExerciseName> findNames(@Param("ids") Collection<Long> ids);
+
+    @Query("""
+        select new com.bullfitapp.bullfit.workout.WorkoutStatusCount(we.workoutId, we.status, count(we))
+        from WorkoutExercise we join Workout w on w.id = we.workoutId
+        where w.userSplitId = :runId and w.status = :status
+        group by we.workoutId, we.status
+        """)
+    List<WorkoutStatusCount> statusCountsForRun(@Param("runId") Long runId,
+                                                @Param("status") WorkoutStatus status);
 }

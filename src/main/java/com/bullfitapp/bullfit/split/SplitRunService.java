@@ -1,17 +1,17 @@
 package com.bullfitapp.bullfit.split;
 
+import com.bullfitapp.bullfit.exercise.Equipment;
 import com.bullfitapp.bullfit.workout.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -23,16 +23,21 @@ public class SplitRunService {
     private final SplitDayExerciseRepository sdeRepository;
     private final WorkoutRepository workoutRepository;
     private final WorkoutExerciseRepository weRepository;
+    private final SplitExerciseOverrideRepository splitExerciseOverrideRepository;
+    private final WorkoutSetRepository workoutSetRepository;
 
     public SplitRunService(UserSplitRepository userSplitRepository, BullSplitRepository splitRepository,
                            SplitDayRepository dayRepository, SplitDayExerciseRepository sdeRepository,
-                           WorkoutRepository workoutRepository, WorkoutExerciseRepository weRepository) {
+                           WorkoutRepository workoutRepository, WorkoutExerciseRepository weRepository,
+                           SplitExerciseOverrideRepository splitExerciseOverrideRepository, WorkoutSetRepository workoutSetRepository) {
         this.userSplitRepository = userSplitRepository;
         this.splitRepository = splitRepository;
         this.dayRepository = dayRepository;
         this.sdeRepository = sdeRepository;
         this.workoutRepository = workoutRepository;
         this.weRepository = weRepository;
+        this.splitExerciseOverrideRepository = splitExerciseOverrideRepository;
+        this.workoutSetRepository = workoutSetRepository;
     }
 
     @Transactional(readOnly = true)
@@ -133,6 +138,8 @@ public class SplitRunService {
             throw new SplitException("That day has no exercises. Add some to the BullSplit first.");
         }
 
+
+
         Workout workout = new Workout();
         workout.setUserId(userId);
         workout.setStartedAt(LocalDateTime.now(ZoneOffset.UTC));
@@ -140,11 +147,18 @@ public class SplitRunService {
         workout.setSplitDayId(day.getId());
         workoutRepository.save(workout);
 
+        Map<Long, Long> overrides = splitExerciseOverrideRepository.findByUserSplitId(run.getId()).stream()
+                .collect(Collectors.toMap(SplitExerciseOverride::getSplitDayExerciseId,
+                        SplitExerciseOverride::getReplacementExerciseId));
+
         int order = 1;
         for (SplitDayExercise sde : planned) {
+            Long replacement = overrides.get(sde.getId());
             WorkoutExercise we = new WorkoutExercise();
             we.setWorkoutId(workout.getId());
-            we.setExerciseId(sde.getExerciseId()); // 6d swaps will substitute here
+            we.setExerciseId(replacement != null ? replacement : sde.getExerciseId());
+            we.setSwappedFromId(replacement != null ? sde.getExerciseId() : null);
+            we.setSplitDayExerciseId(sde.getId());
             we.setOrderIndex(order++);
             we.setPlanned(true);
             we.setStatus(WorkoutExerciseStatus.PLANNED);
@@ -178,6 +192,81 @@ public class SplitRunService {
         if (split == null) return null;
         return split.getName() + " - Day " + day.getDayNumber()
                 + (day.getLabel() == null ? "" : ": " + day.getLabel());
+    }
+
+    /** Remembers (or clears) a "for the rest of this split" swap on one run. */
+    @Transactional
+    public void applyOverride(Long userSplitId, Long sdeId, Long exerciseId) {
+        SplitDayExercise sde = sdeRepository.findById(sdeId).orElse(null);
+        if (sde == null) return;
+        Optional<SplitExerciseOverride> existing =
+                splitExerciseOverrideRepository.findByUserSplitIdAndSplitDayExerciseId(userSplitId, sdeId);
+        if (exerciseId.equals(sde.getExerciseId())) { // swapped back to the original
+            existing.ifPresent(splitExerciseOverrideRepository::delete);
+            return;
+        }
+        SplitExerciseOverride override = existing.orElseGet(() -> {
+            SplitExerciseOverride created = new SplitExerciseOverride();
+            created.setUserSplitId(userSplitId);
+            created.setSplitDayExerciseId(sdeId);
+            return created;
+        });
+        override.setReplacementExerciseId(exerciseId);
+        splitExerciseOverrideRepository.save(override);
+    }
+
+    @Transactional(readOnly = true)
+    public List<RunListItem> completedRuns(Long userId) {
+        List<UserSplit> runs = userSplitRepository.findByUserIdAndStatusOrderByEndedAtDesc(userId, RunStatus.COMPLETED);
+        if (runs.isEmpty()) return List.of();
+        Map<Long, BullSplit> splits = splitRepository
+                .findAllById(runs.stream().map(UserSplit::getSplitId).toList()).stream()
+                .collect(Collectors.toMap(BullSplit::getId, s -> s));
+        Map<Long, Long> counts = workoutRepository
+                .countByRuns(runs.stream().map(UserSplit::getId).toList(), WorkoutStatus.COMPLETED).stream()
+                .collect(Collectors.toMap(RunWorkoutCount::runId, RunWorkoutCount::total));
+        return runs.stream().map(r -> new RunListItem(r.getId(), splits.get(r.getSplitId()).getName(),
+                r.getStartedAt(), r.getEndedAt(), counts.getOrDefault(r.getId(), 0L))).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public RunSummary summary(Long userId, Long runId) {
+        UserSplit run = userSplitRepository.findByIdAndUserId(runId, userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        BullSplit split = splitRepository.findById(run.getSplitId()).orElseThrow();
+        List<Workout> workouts = workoutRepository
+                .findByUserSplitIdAndStatusOrderByStartedAtAsc(runId, WorkoutStatus.COMPLETED);
+
+        long completedTotal = 0, skippedTotal = 0;
+        Map<Long, Long> completedBy = new HashMap<>();
+        Map<Long, Long> skippedBy = new HashMap<>();
+        for (WorkoutStatusCount c : weRepository.statusCountsForRun(runId, WorkoutStatus.COMPLETED)) {
+            if (c.status() == WorkoutExerciseStatus.SKIPPED) {
+                skippedTotal += c.total();
+                skippedBy.merge(c.workoutId(), c.total(), Long::sum);
+            } else {
+                completedTotal += c.total();
+                completedBy.merge(c.workoutId(), c.total(), Long::sum);
+            }
+        }
+
+        Map<Long, SplitDay> days = dayRepository.findAllById(workouts.stream()
+                        .map(Workout::getSplitDayId).filter(Objects::nonNull).distinct().toList()).stream()
+                .collect(Collectors.toMap(SplitDay::getId, d -> d));
+
+        List<RunWorkoutItem> items = workouts.stream().map(w -> {
+            SplitDay day = days.get(w.getSplitDayId());
+            String label = day == null ? "" : "Day " + day.getDayNumber()
+                    + (day.getLabel() == null ? "" : ": " + day.getLabel());
+            return new RunWorkoutItem(w.getId(), w.getStartedAt(), label,
+                    completedBy.getOrDefault(w.getId(), 0L), skippedBy.getOrDefault(w.getId(), 0L));
+        }).toList();
+
+        BigDecimal volume = workoutSetRepository.volumeForRun(runId, WorkoutStatus.COMPLETED, Equipment.MACHINE_ASSISTANCE);
+        return new RunSummary(runId, split.getName(), run.getStatus(), run.getStartedAt(), run.getEndedAt(),
+                workouts.size(), completedTotal, skippedTotal,
+                workoutSetRepository.countSetsForRun(runId, WorkoutStatus.COMPLETED),
+                volume == null ? BigDecimal.ZERO : volume, items);
     }
 
     private String targetText(SplitDayExercise sde) {
