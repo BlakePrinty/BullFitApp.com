@@ -44,3 +44,5 @@ main { padding: 2rem; }
 details { margin: .75rem 0; }
 
 
+.friend-actions form { display: inline; }
+.friend-actions > * { margin-right: .5rem; }
