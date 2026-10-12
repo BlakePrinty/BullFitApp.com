@@ -2,6 +2,8 @@ package com.bullfitapp.bullfit.split;
 
 import com.bullfitapp.bullfit.user.UserRepository;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,10 +28,18 @@ public class SplitRunController {
         Long userId = userRepository.findByUsername(principal.getName()).orElseThrow().getId();
         try {
             runService.stop(userId, runId);
-            redirect.addFlashAttribute("message", "BullSplit stopped.");
+            redirect.addFlashAttribute("message", "BullSplit stopped. Here's how it went.");
+            return "redirect:/runs/" + runId;
         } catch (SplitException e) {
             redirect.addFlashAttribute("error", e.getMessage());
+            return "redirect:/workouts";
         }
-        return "redirect:/workouts";
+    }
+
+    @GetMapping("/{runId}")
+    public String summary(@PathVariable Long runId, Principal principal, Model model) {
+        Long userId = userRepository.findByUsername(principal.getName()).orElseThrow().getId();
+        model.addAttribute("run", runService.summary(userId, runId));
+        return "split/run-summary";
     }
 }

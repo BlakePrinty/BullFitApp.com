@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Completed BullSplits - BullFit</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<main>
+    <h1>BullSplits</h1>
+    <div th:replace="~{fragments/split-tabs :: tabs('completed')}"></div>
+
+    <p class="muted" th:if="${#lists.isEmpty(runs)}">
+        Nothing completed yet. When you stop a BullSplit it moves here with a summary.
+    </p>
+
+    <table class="exercise-table" th:unless="${#lists.isEmpty(runs)}">
+        <thead><tr><th>BullSplit</th><th>Ran</th><th>Workouts</th></tr></thead>
+        <tbody>
+        <tr th:each="r : ${runs}">
+            <td><a th:href="@{/runs/{id}(id=${r.runId()})}" th:text="${r.splitName()}"></a></td>
+            <td th:text="${@dt.date(r.startedAt(), currentUser.timeZone)} + ' to ' + ${@dt.date(r.endedAt(), currentUser.timeZone)}"></td>
+            <td th:text="${r.workouts()}"></td>
+        </tr>
+        </tbody>
+    </table>
+</main>
+</body>
+</html>

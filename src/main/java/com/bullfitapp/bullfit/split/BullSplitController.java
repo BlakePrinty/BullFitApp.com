@@ -233,4 +233,10 @@ public class BullSplitController {
             return builder(id);
         }
     }
+
+    @GetMapping("/completed")
+    public String completed(Principal principal, Model model) {
+        model.addAttribute("runs", splitRunService.completedRuns(user(principal).getId()));
+        return "split/completed";
+    }
 }

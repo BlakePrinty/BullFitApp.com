@@ -27,6 +27,8 @@ public class WorkoutExercise {
     @Column(name = "target_text") private String targetText;
     @Column(name = "swapped_from_id") private Long swappedFromId;
 
+    @Column(name = "split_day_exercise_id") private Long splitDayExerciseId;
+
     public Long getId() {
         return id;
     }
@@ -89,5 +91,13 @@ public class WorkoutExercise {
 
     public void setSwappedFromId(Long swappedFromId) {
         this.swappedFromId = swappedFromId;
+    }
+
+    public Long getSplitDayExerciseId() {
+        return splitDayExerciseId;
+    }
+
+    public void setSplitDayExerciseId(Long splitDayExerciseId) {
+        this.splitDayExerciseId = splitDayExerciseId;
     }
 }

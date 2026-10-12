@@ -1,20 +1,26 @@
 package com.bullfitapp.bullfit.workout;
 
 import com.bullfitapp.bullfit.exercise.Equipment;
+import com.bullfitapp.bullfit.exercise.Exercise;
 import com.bullfitapp.bullfit.exercise.ExerciseService;
 import com.bullfitapp.bullfit.exercise.MuscleGroup;
 import com.bullfitapp.bullfit.split.SplitException;
 import com.bullfitapp.bullfit.split.SplitRunService;
 import com.bullfitapp.bullfit.user.User;
 import com.bullfitapp.bullfit.user.UserRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.math.BigDecimal;
 import java.security.Principal;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -264,5 +270,61 @@ public class WorkoutController {
         workoutService.deleteWorkout(id, userId(principal));
         redirect.addFlashAttribute("message", "Workout deleted.");
         return "redirect:/workouts";
+    }
+
+    @GetMapping("/{id}/exercises/{weId}/swap")
+    public String swapPage(@PathVariable Long id, @PathVariable Long weId,
+                           @RequestParam(required = false) String q,
+                           @RequestParam(required = false) String muscle,
+                           @RequestParam(required = false) Equipment equipment,
+                           Principal principal, Model model, RedirectAttributes redirect) {
+        User user = user(principal);
+        WorkoutView view = workoutService.view(id, user.getId());
+        if (view.status() != WorkoutStatus.IN_PROGRESS) {
+            return "redirect:/workouts/" + id + "/summary";
+        }
+        WorkoutExerciseView current = view.exercises().stream()
+                .filter(e -> e.id().equals(weId)).findFirst()
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        if (!current.planned() || !current.sets().isEmpty() || !current.cardioEntries().isEmpty()) {
+            redirect.addFlashAttribute("error", "Only planned exercises with nothing logged can be swapped.");
+            return "redirect:/workouts/" + id;
+        }
+
+        // First visit (no "muscle" parameter) defaults to the same muscle group; "" means all.
+        MuscleGroup selectedMuscle;
+        if (muscle == null) {
+            selectedMuscle = current.muscleGroup();
+        } else if (muscle.isBlank()) {
+            selectedMuscle = null;
+        } else {
+            try { selectedMuscle = MuscleGroup.valueOf(muscle); } catch (IllegalArgumentException e) { selectedMuscle = null; }
+        }
+
+        Set<Long> inWorkout = view.exercises().stream()
+                .map(WorkoutExerciseView::exerciseId).collect(Collectors.toSet());
+        List<Exercise> options = new ArrayList<>(exerciseService.search(user.getId(), q, selectedMuscle, equipment))
+                .stream()
+                .filter(e -> !inWorkout.contains(e.getId()) && e.isCardio() == current.cardio())
+                .sorted(Comparator.comparing((Exercise e) -> e.getEquipment() == current.equipment()))
+                .toList();
+
+        model.addAttribute("workoutId", id);
+        model.addAttribute("current", current);
+        model.addAttribute("exercises", options);
+        model.addAttribute("muscleGroups", MuscleGroup.values());
+        model.addAttribute("equipmentTypes", Equipment.values());
+        model.addAttribute("q", q);
+        model.addAttribute("selectedMuscle", selectedMuscle);
+        model.addAttribute("selectedEquipment", equipment);
+        return "workout/swap-exercise";
+    }
+
+    @PostMapping("/{id}/exercises/{weId}/swap")
+    public String swap(@PathVariable Long id, @PathVariable Long weId, @RequestParam Long exerciseId,
+                       @RequestParam(defaultValue = "workout") String scope,
+                       Principal principal, RedirectAttributes redirect) {
+        return run(id, weId, principal, redirect,
+                uid -> workoutService.swap(id, uid, weId, exerciseId, "split".equals(scope)));
     }
 }

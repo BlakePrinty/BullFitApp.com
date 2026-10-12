@@ -43,4 +43,9 @@ public record WorkoutView(Long id, WorkoutStatus status, LocalDateTime startedAt
     public String totalVolumeDisplay() {
         return Numbers.plain(totalVolume());
     }
+
+    public long unfinishedPlanned() {
+        return exercises.stream()
+                .filter(e -> e.planned() && e.sets().isEmpty() && e.cardioEntries().isEmpty()).count();
+    }
 }
