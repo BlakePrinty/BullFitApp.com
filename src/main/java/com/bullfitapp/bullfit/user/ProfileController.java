@@ -1,6 +1,7 @@
 package com.bullfitapp.bullfit.user;
 
 import com.bullfitapp.bullfit.common.ZoneOptions;
+import com.bullfitapp.bullfit.social.FriendService;
 import com.bullfitapp.bullfit.split.BullSplitService;
 import com.bullfitapp.bullfit.workout.PersonalRecordService;
 import jakarta.validation.Valid;
@@ -23,12 +24,14 @@ public class ProfileController {
     private final UserService userService;
     private final PersonalRecordService recordService;
     private final BullSplitService bullSplitService;
+    private final FriendService friendService;
 
-    public ProfileController(UserRepository userRepository, UserService userService, PersonalRecordService recordService, BullSplitService bullSplitService) {
+    public ProfileController(UserRepository userRepository, UserService userService, PersonalRecordService recordService, BullSplitService bullSplitService, FriendService friendService) {
         this.userRepository = userRepository;
         this.userService = userService;
         this.recordService = recordService;
         this.bullSplitService = bullSplitService;
+        this.friendService = friendService;
     }
 
     @GetMapping("/profile")
@@ -42,6 +45,10 @@ public class ProfileController {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         model.addAttribute("profileUser", user);
         model.addAttribute("isOwner", user.getUsername().equals(principal.getName()));
+        if (!user.getUsername().equals(principal.getName())) {
+            User viewer = userRepository.findByUsername(principal.getName()).orElseThrow();
+            model.addAttribute("person", friendService.personFor(viewer.getId(), user));
+        }
         model.addAttribute("pinnedRecords", recordService.pinned(user.getId()));
         model.addAttribute("publishedSplits", bullSplitService.publishedBy(user.getId()));
         return "user/profile";
