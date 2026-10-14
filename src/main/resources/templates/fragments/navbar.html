@@ -19,6 +19,9 @@
         <a th:href="@{/friends}">Friends
             <span class="badge" th:if="${pendingRequests != null and pendingRequests > 0}" th:text="${pendingRequests}"></span>
         </a>
+        <a th:href="@{/groups}">BS Trackers
+            <span class="badge" th:if="${pendingInvites != null and pendingInvites > 0}" th:text="${pendingInvites}"></span>
+        </a>
         <a sec:authorize="hasAnyRole('ADMIN','DEVELOPER')" th:href="@{/admin/exercises}">Admin</a>
         <a th:href="@{/profile}">
             <span th:replace="~{fragments/username :: username(${currentUser})}"></span>

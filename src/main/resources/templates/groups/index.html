@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BS Trackers - BullFit</title>
+  <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<main>
+  <h1>BS Trackers</h1>
+  <p class="muted">Accountability groups for you and your friends.</p>
+  <p class="message" th:if="${message}" th:text="${message}"></p>
+  <p class="error" th:if="${error}" th:text="${error}"></p>
+
+  <section th:if="${!#lists.isEmpty(invites)}">
+    <h2>Invites</h2>
+    <table class="exercise-table">
+      <tbody>
+      <tr th:each="i : ${invites}">
+        <td>
+          <strong th:text="${i.groupName()}"></strong><br>
+          <span class="muted">invited by
+                        <span th:replace="~{fragments/username :: username(${i.invitedBy()})}"></span></span>
+        </td>
+        <td>
+          <form th:action="@{/groups/{id}/accept(id=${i.groupId()})}" method="post" style="display:inline">
+            <button type="submit">Join</button>
+          </form>
+          <form th:action="@{/groups/{id}/decline(id=${i.groupId()})}" method="post" style="display:inline">
+            <button type="submit" class="link-button">Decline</button>
+          </form>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <h2>Your groups</h2>
+  <p class="muted" th:text="${ownedCount} + ' of ' + ${maxOwned} + ' groups owned'"></p>
+  <p><a class="button" th:href="@{/groups/new}">+ New BS Tracker</a></p>
+
+  <p class="muted" th:if="${#lists.isEmpty(groups)}">
+    You're not in any groups yet. Create one and invite your friends.
+  </p>
+  <table class="exercise-table" th:unless="${#lists.isEmpty(groups)}">
+    <thead><tr><th>Group</th><th>Members</th><th>Goal</th><th></th></tr></thead>
+    <tbody>
+    <tr th:each="g : ${groups}">
+      <td><a th:href="@{/groups/{id}(id=${g.id()})}" th:text="${g.name()}"></a></td>
+      <td th:text="${g.members()}"></td>
+      <td th:text="${g.weeklyGoal()} + ' days/week'"></td>
+      <td class="muted" th:text="${g.owner()} ? 'Owner' : ''"></td>
+    </tr>
+    </tbody>
+  </table>
+</main>
+</body>
+</html>

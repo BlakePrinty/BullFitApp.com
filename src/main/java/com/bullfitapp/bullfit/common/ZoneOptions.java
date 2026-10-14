@@ -22,4 +22,8 @@ public final class ZoneOptions {
     public static boolean isValid(String id) {
         return id != null && ZoneId.getAvailableZoneIds().contains(id);
     }
+
+    public static ZoneId zoneOf(String id) {
+        return isValid(id) ? ZoneId.of(id) : ZoneId.of(DEFAULT);
+    }
 }
