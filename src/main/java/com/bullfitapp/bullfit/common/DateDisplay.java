@@ -4,6 +4,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.time.format.TextStyle;
 import java.util.Locale;
 
 @Component("dt")
@@ -33,5 +34,13 @@ public class DateDisplay {
 
     public String day(LocalDate date) {
         return date == null ? "" : DATE.format(date);
+    }
+
+    public String weekday(LocalDate date) {
+        return date.getDayOfWeek().getDisplayName(TextStyle.SHORT, Locale.ENGLISH);
+    }
+
+    public String dayOfMonth(LocalDate date) {
+        return String.valueOf(date.getDayOfMonth());
     }
 }

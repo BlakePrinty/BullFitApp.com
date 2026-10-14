@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>New BS Tracker - BullFit</title>
+  <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<main>
+  <h1>New BS Tracker</h1>
+  <p class="error" th:if="${#fields.hasGlobalErrors()}"
+     th:each="err : ${#fields.globalErrors()}" th:text="${err}"></p>
+
+  <form th:action="@{/groups/new}" th:object="${form}" method="post">
+    <label>Name <input type="text" th:field="*{name}" maxlength="50"></label>
+    <span class="error" th:errors="*{name}"></span><br>
+
+    <label>Description (optional)
+      <textarea th:field="*{description}" rows="3" maxlength="300"></textarea></label>
+    <span class="error" th:errors="*{description}"></span><br>
+
+    <label>Weekly goal
+      <select th:field="*{weeklyGoal}">
+        <option th:each="n : ${#numbers.sequence(1, 7)}" th:value="${n}"
+                th:text="${n} + (${n} == 1 ? ' day' : ' days') + ' per week'"></option>
+      </select>
+    </label>
+    <span class="error" th:errors="*{weeklyGoal}"></span>
+
+    <p class="muted">Anyone in the group can see which days each member trained, and nothing else.</p>
+    <button type="submit" class="primary">Create</button>
+    <a th:href="@{/groups}">Cancel</a>
+  </form>
+</main>
+</body>
+</html>

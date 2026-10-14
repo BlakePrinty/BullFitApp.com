@@ -30,4 +30,13 @@ public interface WorkoutRepository extends JpaRepository<Workout, Long> {
         """)
     List<RunWorkoutCount> countByRuns(@Param("runIds") Collection<Long> runIds,
                                       @Param("status") WorkoutStatus status);
+
+    @Query("""
+        select new com.bullfitapp.bullfit.workout.WorkoutTime(w.userId, w.startedAt)
+        from Workout w
+        where w.userId in :userIds and w.status = :status and w.startedAt >= :from
+        """)
+    List<WorkoutTime> findTimes(@Param("userIds") Collection<Long> userIds,
+                                @Param("status") WorkoutStatus status,
+                                @Param("from") LocalDateTime from);
 }

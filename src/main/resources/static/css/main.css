@@ -43,6 +43,11 @@ main { padding: 2rem; }
 .row-actions { display: flex; gap: .5rem; align-items: center; }
 details { margin: .75rem 0; }
 
-
 .friend-actions form { display: inline; }
 .friend-actions > * { margin-right: .5rem; }
+
+.grid-scroll { overflow-x: auto; margin: 1rem 0; }
+.check-grid { border-collapse: collapse; min-width: 100%; }
+.check-grid th, .check-grid td { padding: .35rem .5rem; text-align: center; border-bottom: 1px solid #2a2d34; white-space: nowrap; }
+.check-grid th.left, .check-grid td.left { text-align: left; }
+.check-grid td.hit { color: #7fd48a; font-weight: bold; }
