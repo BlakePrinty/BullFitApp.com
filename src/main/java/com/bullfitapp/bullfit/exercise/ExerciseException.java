@@ -9,5 +9,7 @@ public class ExerciseException extends RuntimeException {
         this.field = field;
     }
 
-    public String getField() { return field; }
+    public String getField() {
+        return field;
+    }
 }

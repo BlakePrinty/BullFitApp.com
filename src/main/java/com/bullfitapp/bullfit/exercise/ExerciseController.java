@@ -21,9 +21,9 @@ public class ExerciseController {
 
     @GetMapping("/exercises")
     public String library(@RequestParam(required = false) String q,
-                          @RequestParam(required = false) MuscleGroup muscle,
-                          @RequestParam(required = false) Equipment equipment,
-                          Principal principal, Model model) {
+            @RequestParam(required = false) MuscleGroup muscle,
+            @RequestParam(required = false) Equipment equipment,
+            Principal principal, Model model) {
         Long userId = userRepository.findByUsername(principal.getName()).orElseThrow().getId();
         model.addAttribute("exercises", exerciseService.search(userId, q, muscle, equipment));
         model.addAttribute("muscleGroups", MuscleGroup.values());

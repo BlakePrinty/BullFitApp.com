@@ -16,7 +16,7 @@ public class ExerciseService {
     private final ExerciseRequestRepository requestRepository;
 
     public ExerciseService(ExerciseRepository exerciseRepository,
-                           ExerciseRequestRepository requestRepository) {
+            ExerciseRequestRepository requestRepository) {
         this.exerciseRepository = exerciseRepository;
         this.requestRepository = requestRepository;
     }

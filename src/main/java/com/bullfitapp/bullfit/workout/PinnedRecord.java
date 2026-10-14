@@ -6,12 +6,15 @@ import jakarta.persistence.*;
 @Table(name = "pinned_record")
 public class PinnedRecord {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) private Long id;
-    @Column(name = "user_id", nullable = false) private Long userId;
-    @Column(name = "exercise_id", nullable = false) private Long exerciseId;
-    @Column(name = "slot", nullable = false) private int slot;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
+    @Column(name = "exercise_id", nullable = false)
+    private Long exerciseId;
+    @Column(name = "slot", nullable = false)
+    private int slot;
     // getters and setters
-
 
     public Long getId() {
         return id;

@@ -31,11 +31,11 @@ public class WorkoutService {
     private final SplitRunService splitRunService;
 
     public WorkoutService(WorkoutRepository workoutRepository,
-                          WorkoutExerciseRepository weRepository,
-                          WorkoutSetRepository setRepository,
-                          CardioEntryRepository cardioRepository,
-                          ExerciseRepository exerciseRepository,
-                          SplitRunService splitRunService) {
+            WorkoutExerciseRepository weRepository,
+            WorkoutSetRepository setRepository,
+            CardioEntryRepository cardioRepository,
+            ExerciseRepository exerciseRepository,
+            SplitRunService splitRunService) {
         this.workoutRepository = workoutRepository;
         this.weRepository = weRepository;
         this.setRepository = setRepository;
@@ -61,9 +61,13 @@ public class WorkoutService {
         });
     }
 
-    private record Settled(int logged, List<WorkoutExercise> toDrop) {}
+    private record Settled(int logged, List<WorkoutExercise> toDrop) {
+    }
 
-    /** Marks planned exercises completed or skipped, and lists unplanned empty ones to drop. */
+    /**
+     * Marks planned exercises completed or skipped, and lists unplanned empty ones
+     * to drop.
+     */
     private Settled settle(Long workoutId) {
         List<WorkoutExercise> toDrop = new ArrayList<>();
         int logged = 0;
@@ -96,7 +100,6 @@ public class WorkoutService {
         workoutRepository.save(workout);
         splitRunService.afterWorkoutFinished(workout);
     }
-
 
     @Transactional
     public void discard(Long workoutId, Long userId) {
@@ -134,7 +137,8 @@ public class WorkoutService {
         owned(workoutId, userId);
         WorkoutExercise we = requireWorkoutExercise(weId, workoutId);
         if (we.isPlanned()) {
-            throw new WorkoutException("Planned exercises can't be removed. Leave it empty and it will count as skipped.");
+            throw new WorkoutException(
+                    "Planned exercises can't be removed. Leave it empty and it will count as skipped.");
         }
         weRepository.delete(we);
     }
@@ -194,8 +198,8 @@ public class WorkoutService {
 
     @Transactional
     public void addCardio(Long workoutId, Long userId, Long weId,
-                          Integer minutes, Integer seconds,
-                          BigDecimal distance, BigDecimal speed, BigDecimal incline) {
+            Integer minutes, Integer seconds,
+            BigDecimal distance, BigDecimal speed, BigDecimal incline) {
         owned(workoutId, userId);
         WorkoutExercise we = requireWorkoutExercise(weId, workoutId);
         Exercise exercise = exerciseRepository.findById(we.getExerciseId()).orElseThrow();
@@ -240,21 +244,21 @@ public class WorkoutService {
 
         Map<Long, List<WorkoutSet>> sets = weIds.isEmpty() ? Map.of()
                 : setRepository.findByWorkoutExerciseIdInOrderBySetNumber(weIds).stream()
-                .collect(Collectors.groupingBy(WorkoutSet::getWorkoutExerciseId));
+                        .collect(Collectors.groupingBy(WorkoutSet::getWorkoutExerciseId));
         Map<Long, List<CardioEntry>> cardio = weIds.isEmpty() ? Map.of()
                 : cardioRepository.findByWorkoutExerciseIdInOrderById(weIds).stream()
-                .collect(Collectors.groupingBy(CardioEntry::getWorkoutExerciseId));
+                        .collect(Collectors.groupingBy(CardioEntry::getWorkoutExerciseId));
 
         List<WorkoutExerciseView> views = new ArrayList<>();
 
         Set<Long> exerciseIds = new HashSet<>();
         for (WorkoutExercise we : wes) {
             exerciseIds.add(we.getExerciseId());
-            if (we.getSwappedFromId() != null) exerciseIds.add(we.getSwappedFromId());
+            if (we.getSwappedFromId() != null)
+                exerciseIds.add(we.getSwappedFromId());
         }
         Map<Long, Exercise> exercises = exerciseRepository.findAllById(exerciseIds).stream()
                 .collect(Collectors.toMap(Exercise::getId, e -> e));
-
 
         for (WorkoutExercise we : wes) {
             Exercise ex = exercises.get(we.getExerciseId());
@@ -268,7 +272,8 @@ public class WorkoutService {
                             .map(s -> new SetView(s.getId(), s.getSetNumber(), s.getWeight(), s.getReps())).toList(),
                     cardio.getOrDefault(we.getId(), List.of()).stream()
                             .map(c -> new CardioView(c.getId(), c.getDurationSeconds(),
-                                    c.getDistance(), c.getSpeed(), c.getIncline())).toList()));
+                                    c.getDistance(), c.getSpeed(), c.getIncline()))
+                            .toList()));
         }
         return new WorkoutView(workout.getId(), workout.getStatus(), workout.getStartedAt(), workout.getEndedAt(),
                 splitRunService.title(workout.getUserSplitId(), workout.getSplitDayId()), views);
@@ -310,7 +315,10 @@ public class WorkoutService {
         workoutRepository.delete(owned(workoutId, userId)); // DB cascades the children
     }
 
-    /** Called when the user finishes editing. Returns true if nothing was left and the workout was deleted. */
+    /**
+     * Called when the user finishes editing. Returns true if nothing was left and
+     * the workout was deleted.
+     */
     @Transactional
     public boolean completeEdit(Long workoutId, Long userId) {
         Workout workout = owned(workoutId, userId);

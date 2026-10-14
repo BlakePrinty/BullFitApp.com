@@ -8,8 +8,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public record WorkoutView(Long id, WorkoutStatus status, LocalDateTime startedAt,
-                          LocalDateTime endedAt, String splitTitle,
-                          List<WorkoutExerciseView> exercises) {
+        LocalDateTime endedAt, String splitTitle,
+        List<WorkoutExerciseView> exercises) {
 
     public long completedCount() {
         return exercises.stream().filter(e -> e.status() != WorkoutExerciseStatus.SKIPPED).count();
@@ -26,7 +26,8 @@ public record WorkoutView(Long id, WorkoutStatus status, LocalDateTime startedAt
     public BigDecimal totalVolume() {
         BigDecimal total = BigDecimal.ZERO;
         for (WorkoutExerciseView e : exercises) {
-            if (e.cardio() || e.equipment() == Equipment.MACHINE_ASSISTANCE) continue;
+            if (e.cardio() || e.equipment() == Equipment.MACHINE_ASSISTANCE)
+                continue;
             for (SetView s : e.sets()) {
                 if (s.weight() != null) {
                     total = total.add(s.weight().multiply(BigDecimal.valueOf(s.reps())));

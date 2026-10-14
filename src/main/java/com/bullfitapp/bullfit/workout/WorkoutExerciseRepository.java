@@ -10,27 +10,30 @@ import java.util.Optional;
 
 public interface WorkoutExerciseRepository extends JpaRepository<WorkoutExercise, Long> {
     List<WorkoutExercise> findByWorkoutIdOrderByOrderIndex(Long workoutId);
+
     Optional<WorkoutExercise> findByIdAndWorkoutId(Long id, Long workoutId);
+
     boolean existsByWorkoutIdAndExerciseId(Long workoutId, Long exerciseId);
+
     long countByWorkoutId(Long workoutId);
 
     @Query("select coalesce(max(we.orderIndex), 0) from WorkoutExercise we where we.workoutId = :workoutId")
     int maxOrderIndex(@Param("workoutId") Long workoutId);
 
     @Query("""
-        select new com.bullfitapp.bullfit.workout.WorkoutExerciseName(we.workoutId, e.name)
-        from WorkoutExercise we join Exercise e on e.id = we.exerciseId
-        where we.workoutId in :ids
-        order by we.workoutId, we.orderIndex
-        """)
+            select new com.bullfitapp.bullfit.workout.WorkoutExerciseName(we.workoutId, e.name)
+            from WorkoutExercise we join Exercise e on e.id = we.exerciseId
+            where we.workoutId in :ids
+            order by we.workoutId, we.orderIndex
+            """)
     List<WorkoutExerciseName> findNames(@Param("ids") Collection<Long> ids);
 
     @Query("""
-        select new com.bullfitapp.bullfit.workout.WorkoutStatusCount(we.workoutId, we.status, count(we))
-        from WorkoutExercise we join Workout w on w.id = we.workoutId
-        where w.userSplitId = :runId and w.status = :status
-        group by we.workoutId, we.status
-        """)
+            select new com.bullfitapp.bullfit.workout.WorkoutStatusCount(we.workoutId, we.status, count(we))
+            from WorkoutExercise we join Workout w on w.id = we.workoutId
+            where w.userSplitId = :runId and w.status = :status
+            group by we.workoutId, we.status
+            """)
     List<WorkoutStatusCount> statusCountsForRun(@Param("runId") Long runId,
-                                                @Param("status") WorkoutStatus status);
+            @Param("status") WorkoutStatus status);
 }

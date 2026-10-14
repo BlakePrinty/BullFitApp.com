@@ -21,7 +21,7 @@ public class BrowseController {
     private final UserRepository userRepository;
 
     public BrowseController(BrowseService browseService, BullSplitService splitService,
-                            UserRepository userRepository) {
+            UserRepository userRepository) {
         this.browseService = browseService;
         this.splitService = splitService;
         this.userRepository = userRepository;
@@ -33,9 +33,9 @@ public class BrowseController {
 
     @GetMapping("/browse")
     public String browse(@RequestParam(required = false) Integer days,
-                         @RequestParam(required = false) String q,
-                         @RequestParam(defaultValue = "newest") String sort,
-                         @RequestParam(defaultValue = "0") int page, Model model) {
+            @RequestParam(required = false) String q,
+            @RequestParam(defaultValue = "newest") String sort,
+            @RequestParam(defaultValue = "0") int page, Model model) {
         boolean popular = "popular".equals(sort);
         Page<BrowseRow> result = browseService.browse(days, q, popular, page);
         model.addAttribute("rows", result.getContent());

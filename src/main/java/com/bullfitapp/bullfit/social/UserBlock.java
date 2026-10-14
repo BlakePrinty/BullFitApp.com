@@ -8,10 +8,14 @@ import java.time.LocalDateTime;
 @Table(name = "user_block")
 public class UserBlock {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) private Long id;
-    @Column(name = "blocker_id", nullable = false) private Long blockerId;
-    @Column(name = "blocked_id", nullable = false) private Long blockedId;
-    @Column(name = "created_at", nullable = false) private LocalDateTime createdAt;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    @Column(name = "blocker_id", nullable = false)
+    private Long blockerId;
+    @Column(name = "blocked_id", nullable = false)
+    private Long blockedId;
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
     // getters and setters
 
     public Long getId() {
@@ -46,4 +50,3 @@ public class UserBlock {
         this.createdAt = createdAt;
     }
 }
-

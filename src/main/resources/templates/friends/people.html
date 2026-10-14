@@ -1,41 +1,45 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Find people - BullFit</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
 </head>
+
 <body>
-<div th:replace="~{fragments/navbar :: navbar}"></div>
-<main>
-    <h1>Find people</h1>
-    <p><a th:href="@{/friends}">&laquo; Friends</a></p>
-    <p class="message" th:if="${message}" th:text="${message}"></p>
-    <p class="error" th:if="${error}" th:text="${error}"></p>
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+    <main>
+        <h1>Find people</h1>
+        <p><a th:href="@{/friends}">&laquo; Friends</a></p>
+        <p class="message" th:if="${message}" th:text="${message}"></p>
+        <p class="error" th:if="${error}" th:text="${error}"></p>
 
-    <form th:action="@{/people}" method="get" class="filters">
-        <input type="text" name="q" th:value="${q}" placeholder="Search by username" minlength="2">
-        <button type="submit">Search</button>
-    </form>
+        <form th:action="@{/people}" method="get" class="filters">
+            <input type="text" name="q" th:value="${q}" placeholder="Search by username" minlength="2">
+            <button type="submit">Search</button>
+        </form>
 
-    <p class="muted" th:if="${tooShort}">Type at least 2 characters.</p>
-    <p class="muted" th:if="${!q.isEmpty() and !tooShort and #lists.isEmpty(results)}">No one found.</p>
+        <p class="muted" th:if="${tooShort}">Type at least 2 characters.</p>
+        <p class="muted" th:if="${!q.isEmpty() and !tooShort and #lists.isEmpty(results)}">No one found.</p>
 
-    <table class="exercise-table" th:unless="${#lists.isEmpty(results)}">
-        <tbody>
-        <tr th:each="p : ${results}">
-            <td>
-                <a th:href="@{/profile/{u}(u=${p.user().username})}">
-                    <span th:replace="~{fragments/username :: username(${p.user()})}"></span>
-                </a>
-            </td>
-            <td>
-                <span th:replace="~{fragments/person-actions :: actions(${p}, ${'/people?q=' + #uris.escapeQueryParam(q)})}"></span>
-            </td>
-        </tr>
-        </tbody>
-    </table>
-</main>
+        <table class="exercise-table" th:unless="${#lists.isEmpty(results)}">
+            <tbody>
+                <tr th:each="p : ${results}">
+                    <td>
+                        <a th:href="@{/profile/{u}(u=${p.user().username})}">
+                            <span th:replace="~{fragments/username :: username(${p.user()})}"></span>
+                        </a>
+                    </td>
+                    <td>
+                        <span
+                            th:replace="~{fragments/person-actions :: actions(${p}, ${'/people?q=' + #uris.escapeQueryParam(q)})}"></span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </main>
 </body>
+
 </html>

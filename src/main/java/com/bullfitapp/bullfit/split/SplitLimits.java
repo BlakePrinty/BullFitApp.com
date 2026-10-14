@@ -3,7 +3,8 @@ package com.bullfitapp.bullfit.split;
 import com.bullfitapp.bullfit.user.Role;
 
 public final class SplitLimits {
-    private SplitLimits() {}
+    private SplitLimits() {
+    }
 
     public static int maxPublished(Role role) {
         return switch (role) {

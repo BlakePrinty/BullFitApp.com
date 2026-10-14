@@ -1,35 +1,38 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
 <body>
-<nav th:fragment="navbar" class="navbar">
-    <a th:href="@{/}" class="brand">BullFit</a>
-    <span sec:authorize="!isAuthenticated()">
-        <a th:href="@{/login}">Log in</a>
-        <a th:href="@{/register}">Register</a>
-    </span>
-    <span sec:authorize="isAuthenticated()">
-        <a th:href="@{/exercises}">Exercises</a>
-        <a th:href="@{/my-exercises}">My Exercises</a>
-        <a th:href="@{/weight}">Weight</a>
-        <a th:href="@{/workouts}">Workout</a>
-        <a th:href="@{/records}">Records</a>
-        <a th:href="@{/splits}">BullSplits</a>
-        <a th:href="@{/browse}">Browse</a>
-        <a th:href="@{/friends}">Friends
-            <span class="badge" th:if="${pendingRequests != null and pendingRequests > 0}" th:text="${pendingRequests}"></span>
-        </a>
-        <a th:href="@{/groups}">BS Trackers
-            <span class="badge" th:if="${pendingInvites != null and pendingInvites > 0}" th:text="${pendingInvites}"></span>
-        </a>
-        <a sec:authorize="hasAnyRole('ADMIN','DEVELOPER')" th:href="@{/admin/exercises}">Admin</a>
-        <a th:href="@{/profile}">
-            <span th:replace="~{fragments/username :: username(${currentUser})}"></span>
-        </a>
-        <form th:action="@{/logout}" method="post" style="display:inline">
-            <button type="submit">Log out</button>
-        </form>
-    </span>
-</nav>
+    <nav th:fragment="navbar" class="navbar">
+        <a th:href="@{/}" class="brand">BullFit</a>
+        <span sec:authorize="!isAuthenticated()">
+            <a th:href="@{/login}">Log in</a>
+            <a th:href="@{/register}">Register</a>
+        </span>
+        <span sec:authorize="isAuthenticated()">
+            <a th:href="@{/exercises}">Exercises</a>
+            <a th:href="@{/my-exercises}">My Exercises</a>
+            <a th:href="@{/weight}">Weight</a>
+            <a th:href="@{/workouts}">Workout</a>
+            <a th:href="@{/records}">Records</a>
+            <a th:href="@{/splits}">BullSplits</a>
+            <a th:href="@{/browse}">Browse</a>
+            <a th:href="@{/friends}">Friends
+                <span class="badge" th:if="${pendingRequests != null and pendingRequests > 0}"
+                    th:text="${pendingRequests}"></span>
+            </a>
+            <a th:href="@{/groups}">BS Trackers
+                <span class="badge" th:if="${pendingInvites != null and pendingInvites > 0}"
+                    th:text="${pendingInvites}"></span>
+            </a>
+            <a sec:authorize="hasAnyRole('ADMIN','DEVELOPER')" th:href="@{/admin/exercises}">Admin</a>
+            <a th:href="@{/profile}">
+                <span th:replace="~{fragments/username :: username(${currentUser})}"></span>
+            </a>
+            <form th:action="@{/logout}" method="post" style="display:inline">
+                <button type="submit">Log out</button>
+            </form>
+        </span>
+    </nav>
 </body>
+
 </html>

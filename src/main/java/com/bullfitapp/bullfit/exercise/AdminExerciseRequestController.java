@@ -18,7 +18,7 @@ public class AdminExerciseRequestController {
     private final UserRepository userRepository;
 
     public AdminExerciseRequestController(ExerciseRequestService requestService,
-                                          UserRepository userRepository) {
+            UserRepository userRepository) {
         this.requestService = requestService;
         this.userRepository = userRepository;
     }
@@ -46,8 +46,8 @@ public class AdminExerciseRequestController {
 
     @PostMapping("/{id}/reject")
     public String reject(@PathVariable Long id,
-                         @RequestParam(required = false) String reviewNote,
-                         Principal principal, RedirectAttributes redirect) {
+            @RequestParam(required = false) String reviewNote,
+            Principal principal, RedirectAttributes redirect) {
         try {
             requestService.reject(id, userId(principal), reviewNote);
             redirect.addFlashAttribute("message", "Request rejected.");

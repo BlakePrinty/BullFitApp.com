@@ -1,49 +1,53 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <head>
   <meta charset="UTF-8">
   <title th:text="${profileUser.username} + ' - BullFit'">Profile</title>
   <link rel="stylesheet" th:href="@{/css/main.css}">
 </head>
+
 <body>
-<div th:replace="~{fragments/navbar :: navbar}"></div>
-<main>
-  <section class="profile-header">
-    <h1 th:replace="~{fragments/username :: username(${profileUser})}"></h1>
-    <p th:if="${profileUser.fullName != null}" th:text="${profileUser.fullName}"></p>
-    <p class="bio" th:if="${profileUser.bio != null}" th:text="${profileUser.bio}"></p>
-    <p class="muted" th:text="${profileUser.joinedDisplay}"></p>
-    <a th:if="${isOwner}" th:href="@{/settings/profile}">Edit profile</a>
-    <div th:if="${person != null}">
-      <span th:replace="~{fragments/person-actions :: actions(${person}, ${'/profile/' + profileUser.username})}"></span>
-    </div>
-    <p class="message" th:if="${message}" th:text="${message}"></p>
-    <p class="error" th:if="${error}" th:text="${error}"></p>
-  </section>
+  <div th:replace="~{fragments/navbar :: navbar}"></div>
+  <main>
+    <section class="profile-header">
+      <h1 th:replace="~{fragments/username :: username(${profileUser})}"></h1>
+      <p th:if="${profileUser.fullName != null}" th:text="${profileUser.fullName}"></p>
+      <p class="bio" th:if="${profileUser.bio != null}" th:text="${profileUser.bio}"></p>
+      <p class="muted" th:text="${profileUser.joinedDisplay}"></p>
+      <a th:if="${isOwner}" th:href="@{/settings/profile}">Edit profile</a>
+      <div th:if="${person != null}">
+        <span
+          th:replace="~{fragments/person-actions :: actions(${person}, ${'/profile/' + profileUser.username})}"></span>
+      </div>
+      <p class="message" th:if="${message}" th:text="${message}"></p>
+      <p class="error" th:if="${error}" th:text="${error}"></p>
+    </section>
 
-  <section>
-    <h2>Personal Records</h2>
-    <p class="muted" th:if="${#lists.isEmpty(pinnedRecords)}">Nothing pinned yet.</p>
-    <ul class="pr-list" th:unless="${#lists.isEmpty(pinnedRecords)}">
-      <li th:each="pr : ${pinnedRecords}">
-        <strong th:text="${pr.exerciseName()}"></strong>:
-        <span th:text="${pr.bestDisplay()}"></span>
-      </li>
-    </ul>
-    <a th:if="${isOwner}" th:href="@{/records}">Manage records</a>
-  </section>
+    <section>
+      <h2>Personal Records</h2>
+      <p class="muted" th:if="${#lists.isEmpty(pinnedRecords)}">Nothing pinned yet.</p>
+      <ul class="pr-list" th:unless="${#lists.isEmpty(pinnedRecords)}">
+        <li th:each="pr : ${pinnedRecords}">
+          <strong th:text="${pr.exerciseName()}"></strong>:
+          <span th:text="${pr.bestDisplay()}"></span>
+        </li>
+      </ul>
+      <a th:if="${isOwner}" th:href="@{/records}">Manage records</a>
+    </section>
 
-  <section>
-    <h2>Published BullSplits</h2>
-    <p class="muted" th:if="${#lists.isEmpty(publishedSplits)}">No published BullSplits yet.</p>
-    <ul class="pr-list" th:unless="${#lists.isEmpty(publishedSplits)}">
-      <li th:each="s : ${publishedSplits}">
-        <a th:href="@{/browse/{id}(id=${s.id})}" th:text="${s.name}"></a>
-        <span class="muted" th:text="'(' + ${s.dayCount} + ' days)'"></span>
-      </li>
-    </ul>
-  </section>
+    <section>
+      <h2>Published BullSplits</h2>
+      <p class="muted" th:if="${#lists.isEmpty(publishedSplits)}">No published BullSplits yet.</p>
+      <ul class="pr-list" th:unless="${#lists.isEmpty(publishedSplits)}">
+        <li th:each="s : ${publishedSplits}">
+          <a th:href="@{/browse/{id}(id=${s.id})}" th:text="${s.name}"></a>
+          <span class="muted" th:text="'(' + ${s.dayCount} + ' days)'"></span>
+        </li>
+      </ul>
+    </section>
 
-</main>
+  </main>
 </body>
+
 </html>

@@ -21,8 +21,8 @@ public class MyExerciseController {
     private final ExerciseRequestService requestService;
 
     public MyExerciseController(ExerciseService exerciseService,
-                                ExerciseRequestService requestService,
-                                UserRepository userRepository) {
+            ExerciseRequestService requestService,
+            UserRepository userRepository) {
         this.exerciseService = exerciseService;
         this.requestService = requestService;
         this.userRepository = userRepository;
@@ -55,8 +55,8 @@ public class MyExerciseController {
 
     @PostMapping("/{id}/request")
     public String submitRequest(@PathVariable Long id,
-                                @RequestParam(required = false) String note,
-                                Principal principal, RedirectAttributes redirect) {
+            @RequestParam(required = false) String note,
+            Principal principal, RedirectAttributes redirect) {
         try {
             requestService.submit(userId(principal), id, note);
             redirect.addFlashAttribute("message", "Submitted for review.");
@@ -68,7 +68,7 @@ public class MyExerciseController {
 
     @PostMapping("/requests/{requestId}/withdraw")
     public String withdrawRequest(@PathVariable Long requestId, Principal principal,
-                                  RedirectAttributes redirect) {
+            RedirectAttributes redirect) {
         try {
             requestService.withdraw(requestId, userId(principal));
             redirect.addFlashAttribute("message", "Request withdrawn.");
@@ -87,7 +87,7 @@ public class MyExerciseController {
 
     @PostMapping("/new")
     public String create(@Valid @ModelAttribute("form") ExerciseForm form,
-                         BindingResult result, Principal principal, Model model) {
+            BindingResult result, Principal principal, Model model) {
         if (!result.hasErrors()) {
             try {
                 exerciseService.createCustom(userId(principal), form);
@@ -110,8 +110,8 @@ public class MyExerciseController {
 
     @PostMapping("/{id}/edit")
     public String update(@PathVariable Long id,
-                         @Valid @ModelAttribute("form") ExerciseForm form,
-                         BindingResult result, Principal principal, Model model) {
+            @Valid @ModelAttribute("form") ExerciseForm form,
+            BindingResult result, Principal principal, Model model) {
         if (!result.hasErrors()) {
             try {
                 exerciseService.updateCustom(id, userId(principal), form);

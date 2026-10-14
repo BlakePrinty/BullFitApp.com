@@ -36,7 +36,8 @@ public class WorkoutController {
     private final SplitRunService splitRunService;
 
     public WorkoutController(WorkoutService workoutService, WorkoutHistoryService historyService,
-                             ExerciseService exerciseService, UserRepository userRepository, PersonalRecordService recordService, SplitRunService splitRunService) {
+            ExerciseService exerciseService, UserRepository userRepository, PersonalRecordService recordService,
+            SplitRunService splitRunService) {
         this.workoutService = workoutService;
         this.historyService = historyService;
         this.exerciseService = exerciseService;
@@ -58,14 +59,17 @@ public class WorkoutController {
                 + " days. Premium unlocks your full history.";
     }
 
-    /** Where to return after an action: the live workout page, or the edit page for a past workout. */
+    /**
+     * Where to return after an action: the live workout page, or the edit page for
+     * a past workout.
+     */
     private String back(Long id, Long userId, Long weId) {
         String base = workoutService.statusOf(id, userId) == WorkoutStatus.COMPLETED ? "/edit" : "";
         return "redirect:/workouts/" + id + base + (weId != null ? "#we-" + weId : "");
     }
 
     private String run(Long id, Long weId, Principal principal, RedirectAttributes redirect,
-                       Consumer<Long> action) {
+            Consumer<Long> action) {
         Long userId = userId(principal);
         try {
             action.accept(userId);
@@ -90,7 +94,7 @@ public class WorkoutController {
 
     @PostMapping("/start-day")
     public String startDay(@RequestParam(required = false) Integer day, Principal principal,
-                           RedirectAttributes redirect) {
+            RedirectAttributes redirect) {
         try {
             Long workoutId = splitRunService.startDayWorkout(userId(principal), day);
             return "redirect:/workouts/" + workoutId;
@@ -118,7 +122,7 @@ public class WorkoutController {
 
     @GetMapping("/{id}/edit")
     public String edit(@PathVariable Long id, Principal principal, Model model,
-                       RedirectAttributes redirect) {
+            RedirectAttributes redirect) {
         User user = user(principal);
         WorkoutView view = workoutService.view(id, user.getId());
         if (view.status() == WorkoutStatus.IN_PROGRESS) {
@@ -135,7 +139,7 @@ public class WorkoutController {
 
     @GetMapping("/{id}/summary")
     public String summary(@PathVariable Long id, Principal principal, Model model,
-                          RedirectAttributes redirect) {
+            RedirectAttributes redirect) {
         User user = user(principal);
         WorkoutView view = workoutService.view(id, user.getId());
         if (view.status() == WorkoutStatus.IN_PROGRESS) {
@@ -151,10 +155,10 @@ public class WorkoutController {
 
     @GetMapping("/{id}/add-exercise")
     public String pickExercise(@PathVariable Long id,
-                               @RequestParam(required = false) String q,
-                               @RequestParam(required = false) MuscleGroup muscle,
-                               @RequestParam(required = false) Equipment equipment,
-                               Principal principal, Model model, RedirectAttributes redirect) {
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false) MuscleGroup muscle,
+            @RequestParam(required = false) Equipment equipment,
+            Principal principal, Model model, RedirectAttributes redirect) {
         User user = user(principal);
         WorkoutView view = workoutService.view(id, user.getId());
         boolean completed = view.status() == WorkoutStatus.COMPLETED;
@@ -179,7 +183,7 @@ public class WorkoutController {
 
     @PostMapping("/{id}/exercises")
     public String addExercise(@PathVariable Long id, @RequestParam Long exerciseId,
-                              Principal principal, RedirectAttributes redirect) {
+            Principal principal, RedirectAttributes redirect) {
         Long userId = userId(principal);
         try {
             Long weId = workoutService.addExercise(id, userId, exerciseId);
@@ -192,40 +196,40 @@ public class WorkoutController {
 
     @PostMapping("/{id}/exercises/{weId}/remove")
     public String removeExercise(@PathVariable Long id, @PathVariable Long weId,
-                                 Principal principal, RedirectAttributes redirect) {
+            Principal principal, RedirectAttributes redirect) {
         return run(id, null, principal, redirect, uid -> workoutService.removeExercise(id, uid, weId));
     }
 
     @PostMapping("/{id}/exercises/{weId}/sets")
     public String addSet(@PathVariable Long id, @PathVariable Long weId,
-                         @RequestParam(required = false) BigDecimal weight,
-                         @RequestParam(required = false) Integer reps,
-                         Principal principal, RedirectAttributes redirect) {
+            @RequestParam(required = false) BigDecimal weight,
+            @RequestParam(required = false) Integer reps,
+            Principal principal, RedirectAttributes redirect) {
         return run(id, weId, principal, redirect,
                 uid -> workoutService.addSet(id, uid, weId, weight, reps));
     }
 
     @PostMapping("/{id}/exercises/{weId}/sets/{setId}/delete")
     public String deleteSet(@PathVariable Long id, @PathVariable Long weId, @PathVariable Long setId,
-                            Principal principal, RedirectAttributes redirect) {
+            Principal principal, RedirectAttributes redirect) {
         return run(id, weId, principal, redirect, uid -> workoutService.deleteSet(id, uid, setId));
     }
 
     @PostMapping("/{id}/exercises/{weId}/cardio")
     public String addCardio(@PathVariable Long id, @PathVariable Long weId,
-                            @RequestParam(required = false) Integer minutes,
-                            @RequestParam(required = false) Integer seconds,
-                            @RequestParam(required = false) BigDecimal distance,
-                            @RequestParam(required = false) BigDecimal speed,
-                            @RequestParam(required = false) BigDecimal incline,
-                            Principal principal, RedirectAttributes redirect) {
+            @RequestParam(required = false) Integer minutes,
+            @RequestParam(required = false) Integer seconds,
+            @RequestParam(required = false) BigDecimal distance,
+            @RequestParam(required = false) BigDecimal speed,
+            @RequestParam(required = false) BigDecimal incline,
+            Principal principal, RedirectAttributes redirect) {
         return run(id, weId, principal, redirect, uid -> workoutService.addCardio(
                 id, uid, weId, minutes, seconds, distance, speed, incline));
     }
 
     @PostMapping("/{id}/exercises/{weId}/cardio/{entryId}/delete")
     public String deleteCardio(@PathVariable Long id, @PathVariable Long weId, @PathVariable Long entryId,
-                               Principal principal, RedirectAttributes redirect) {
+            Principal principal, RedirectAttributes redirect) {
         return run(id, weId, principal, redirect, uid -> workoutService.deleteCardio(id, uid, entryId));
     }
 
@@ -274,10 +278,10 @@ public class WorkoutController {
 
     @GetMapping("/{id}/exercises/{weId}/swap")
     public String swapPage(@PathVariable Long id, @PathVariable Long weId,
-                           @RequestParam(required = false) String q,
-                           @RequestParam(required = false) String muscle,
-                           @RequestParam(required = false) Equipment equipment,
-                           Principal principal, Model model, RedirectAttributes redirect) {
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false) String muscle,
+            @RequestParam(required = false) Equipment equipment,
+            Principal principal, Model model, RedirectAttributes redirect) {
         User user = user(principal);
         WorkoutView view = workoutService.view(id, user.getId());
         if (view.status() != WorkoutStatus.IN_PROGRESS) {
@@ -291,14 +295,19 @@ public class WorkoutController {
             return "redirect:/workouts/" + id;
         }
 
-        // First visit (no "muscle" parameter) defaults to the same muscle group; "" means all.
+        // First visit (no "muscle" parameter) defaults to the same muscle group; ""
+        // means all.
         MuscleGroup selectedMuscle;
         if (muscle == null) {
             selectedMuscle = current.muscleGroup();
         } else if (muscle.isBlank()) {
             selectedMuscle = null;
         } else {
-            try { selectedMuscle = MuscleGroup.valueOf(muscle); } catch (IllegalArgumentException e) { selectedMuscle = null; }
+            try {
+                selectedMuscle = MuscleGroup.valueOf(muscle);
+            } catch (IllegalArgumentException e) {
+                selectedMuscle = null;
+            }
         }
 
         Set<Long> inWorkout = view.exercises().stream()
@@ -322,8 +331,8 @@ public class WorkoutController {
 
     @PostMapping("/{id}/exercises/{weId}/swap")
     public String swap(@PathVariable Long id, @PathVariable Long weId, @RequestParam Long exerciseId,
-                       @RequestParam(defaultValue = "workout") String scope,
-                       Principal principal, RedirectAttributes redirect) {
+            @RequestParam(defaultValue = "workout") String scope,
+            Principal principal, RedirectAttributes redirect) {
         return run(id, weId, principal, redirect,
                 uid -> workoutService.swap(id, uid, weId, exerciseId, "split".equals(scope)));
     }

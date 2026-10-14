@@ -7,5 +7,6 @@ import java.util.List;
 
 public interface CardioEntryRepository extends JpaRepository<CardioEntry, Long> {
     List<CardioEntry> findByWorkoutExerciseIdInOrderById(Collection<Long> ids);
+
     long countByWorkoutExerciseId(Long workoutExerciseId);
 }

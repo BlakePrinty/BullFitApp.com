@@ -6,10 +6,14 @@ import jakarta.persistence.*;
 @Table(name = "split_day")
 public class SplitDay {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) private Long id;
-    @Column(name = "split_id", nullable = false) private Long splitId;
-    @Column(name = "day_number", nullable = false) private int dayNumber;
-    @Column(name = "label") private String label;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    @Column(name = "split_id", nullable = false)
+    private Long splitId;
+    @Column(name = "day_number", nullable = false)
+    private int dayNumber;
+    @Column(name = "label")
+    private String label;
 
     public Long getId() {
         return id;

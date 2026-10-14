@@ -18,16 +18,20 @@ public class WorkoutExercise {
     @Column(name = "order_index", nullable = false)
     private int orderIndex;
 
-    @Column(name = "planned", nullable = false) private boolean planned = false;
+    @Column(name = "planned", nullable = false)
+    private boolean planned = false;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private WorkoutExerciseStatus status = WorkoutExerciseStatus.COMPLETED;
 
-    @Column(name = "target_text") private String targetText;
-    @Column(name = "swapped_from_id") private Long swappedFromId;
+    @Column(name = "target_text")
+    private String targetText;
+    @Column(name = "swapped_from_id")
+    private Long swappedFromId;
 
-    @Column(name = "split_day_exercise_id") private Long splitDayExerciseId;
+    @Column(name = "split_day_exercise_id")
+    private Long splitDayExerciseId;
 
     public Long getId() {
         return id;

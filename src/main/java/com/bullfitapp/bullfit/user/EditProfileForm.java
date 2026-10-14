@@ -9,14 +9,20 @@ import java.math.BigDecimal;
 
 public class EditProfileForm {
 
-    @Size(max = 50) private String firstName;
-    @Size(max = 50) private String lastName;
+    @Size(max = 50)
+    private String firstName;
+    @Size(max = 50)
+    private String lastName;
 
     @Size(max = 160, message = "Bio can be up to 160 characters")
     private String bio;
 
-    @Min(0) @Max(8)  private Integer heightFeet;
-    @Min(0) @Max(11) private Integer heightInches;
+    @Min(0)
+    @Max(8)
+    private Integer heightFeet;
+    @Min(0)
+    @Max(11)
+    private Integer heightInches;
 
     private String timeZone;
 

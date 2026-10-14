@@ -7,6 +7,8 @@ import java.util.Optional;
 
 public interface SplitDayRepository extends JpaRepository<SplitDay, Long> {
     List<SplitDay> findBySplitIdOrderByDayNumber(Long splitId);
+
     Optional<SplitDay> findByIdAndSplitId(Long id, Long splitId);
+
     Optional<SplitDay> findBySplitIdAndDayNumber(Long splitId, int dayNumber);
 }

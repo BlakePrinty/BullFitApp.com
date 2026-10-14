@@ -26,7 +26,8 @@ public class ProfileController {
     private final BullSplitService bullSplitService;
     private final FriendService friendService;
 
-    public ProfileController(UserRepository userRepository, UserService userService, PersonalRecordService recordService, BullSplitService bullSplitService, FriendService friendService) {
+    public ProfileController(UserRepository userRepository, UserService userService,
+            PersonalRecordService recordService, BullSplitService bullSplitService, FriendService friendService) {
         this.userRepository = userRepository;
         this.userService = userService;
         this.recordService = recordService;
@@ -74,7 +75,7 @@ public class ProfileController {
 
     @PostMapping("/settings/profile")
     public String saveProfile(@Valid @ModelAttribute("form") EditProfileForm form,
-                              BindingResult result, Principal principal, Model model) {
+            BindingResult result, Principal principal, Model model) {
         if (result.hasErrors()) {
             return "user/edit-profile";
         }

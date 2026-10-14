@@ -1,36 +1,46 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Saved BullSplits - BullFit</title>
   <link rel="stylesheet" th:href="@{/css/main.css}">
 </head>
+
 <body>
-<div th:replace="~{fragments/navbar :: navbar}"></div>
-<main>
-  <h1>BullSplits</h1>
-  <div th:replace="~{fragments/split-tabs :: tabs('saved')}"></div>
+  <div th:replace="~{fragments/navbar :: navbar}"></div>
+  <main>
+    <h1>BullSplits</h1>
+    <div th:replace="~{fragments/split-tabs :: tabs('saved')}"></div>
 
-  <p class="message" th:if="${message}" th:text="${message}"></p>
-  <p class="error" th:if="${error}" th:text="${error}"></p>
-  <p class="muted" th:text="${held} + ' of ' + ${heldLimit} + ' BullSplits held'"></p>
+    <p class="message" th:if="${message}" th:text="${message}"></p>
+    <p class="error" th:if="${error}" th:text="${error}"></p>
+    <p class="muted" th:text="${held} + ' of ' + ${heldLimit} + ' BullSplits held'"></p>
 
-  <p class="muted" th:if="${#lists.isEmpty(saved)}">
-    Nothing saved yet. <a th:href="@{/browse}">Browse BullSplits</a> from other lifters.
-  </p>
+    <p class="muted" th:if="${#lists.isEmpty(saved)}">
+      Nothing saved yet. <a th:href="@{/browse}">Browse BullSplits</a> from other lifters.
+    </p>
 
-  <table class="exercise-table" th:unless="${#lists.isEmpty(saved)}">
-    <thead><tr><th>Name</th><th>Days</th><th>Exercises</th><th>Based on</th></tr></thead>
-    <tbody>
-    <tr th:each="s : ${saved}">
-      <td><a th:href="@{/splits/{id}(id=${s.id})}" th:text="${s.name}"></a></td>
-      <td th:text="${s.dayCount}"></td>
-      <td th:text="${s.exerciseCount}"></td>
-      <td class="muted" th:text="${s.basedOn != null} ? ${s.basedOn} : '-'"></td>
-    </tr>
-    </tbody>
-  </table>
-</main>
+    <table class="exercise-table" th:unless="${#lists.isEmpty(saved)}">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Days</th>
+          <th>Exercises</th>
+          <th>Based on</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="s : ${saved}">
+          <td><a th:href="@{/splits/{id}(id=${s.id})}" th:text="${s.name}"></a></td>
+          <td th:text="${s.dayCount}"></td>
+          <td th:text="${s.exerciseCount}"></td>
+          <td class="muted" th:text="${s.basedOn != null} ? ${s.basedOn} : '-'"></td>
+        </tr>
+      </tbody>
+    </table>
+  </main>
 </body>
+
 </html>

@@ -6,12 +6,15 @@ import jakarta.persistence.*;
 @Table(name = "split_exercise_override")
 public class SplitExerciseOverride {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) private Long id;
-    @Column(name = "user_split_id", nullable = false) private Long userSplitId;
-    @Column(name = "split_day_exercise_id", nullable = false) private Long splitDayExerciseId;
-    @Column(name = "replacement_exercise_id", nullable = false) private Long replacementExerciseId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    @Column(name = "user_split_id", nullable = false)
+    private Long userSplitId;
+    @Column(name = "split_day_exercise_id", nullable = false)
+    private Long splitDayExerciseId;
+    @Column(name = "replacement_exercise_id", nullable = false)
+    private Long replacementExerciseId;
     // getters and setters
-
 
     public Long getId() {
         return id;

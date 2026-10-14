@@ -8,7 +8,11 @@ public enum MuscleGroup {
 
     private final String displayName;
 
-    MuscleGroup(String displayName) { this.displayName = displayName; }
+    MuscleGroup(String displayName) {
+        this.displayName = displayName;
+    }
 
-    public String getDisplayName() { return displayName; }
+    public String getDisplayName() {
+        return displayName;
+    }
 }

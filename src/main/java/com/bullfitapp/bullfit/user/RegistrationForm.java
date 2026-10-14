@@ -23,13 +23,17 @@ public class RegistrationForm {
     @Email
     private String email;
 
-    @Size(max = 50) private String firstName;
-    @Size(max = 50) private String lastName;
+    @Size(max = 50)
+    private String firstName;
+    @Size(max = 50)
+    private String lastName;
 
-    @Min(0) @Max(8)
+    @Min(0)
+    @Max(8)
     private Integer heightFeet;
 
-    @Min(0) @Max(11)
+    @Min(0)
+    @Max(11)
     private Integer heightInches;
 
     @DecimalMin(value = "50.0", message = "Weight must be at least 50 lbs")

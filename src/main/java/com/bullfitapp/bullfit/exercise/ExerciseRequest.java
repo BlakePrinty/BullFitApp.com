@@ -38,7 +38,9 @@ public class ExerciseRequest {
     private LocalDateTime reviewedAt;
 
     @PrePersist
-    void onCreate() { createdAt = LocalDateTime.now(); }
+    void onCreate() {
+        createdAt = LocalDateTime.now();
+    }
 
     // generate getters and setters
 

@@ -27,8 +27,9 @@ public class BullSplitService {
     private final UserSplitRepository userSplitRepository;
 
     public BullSplitService(BullSplitRepository splitRepository, SplitDayRepository dayRepository,
-                            SplitDayExerciseRepository sdeRepository,
-                            ExerciseRepository exerciseRepository, UserRepository userRepository, UserSplitRepository userSplitRepository) {
+            SplitDayExerciseRepository sdeRepository,
+            ExerciseRepository exerciseRepository, UserRepository userRepository,
+            UserSplitRepository userSplitRepository) {
         this.splitRepository = splitRepository;
         this.dayRepository = dayRepository;
         this.sdeRepository = sdeRepository;
@@ -53,7 +54,8 @@ public class BullSplitService {
     public List<SplitListItem> mySplits(Long userId) {
         List<BullSplit> splits = splitRepository
                 .findByOwnerIdAndCopyFalseAndArchivedFalseOrderByCreatedAtDesc(userId);
-        if (splits.isEmpty()) return List.of();
+        if (splits.isEmpty())
+            return List.of();
         Map<Long, Long> counts = sdeRepository
                 .countBySplit(splits.stream().map(BullSplit::getId).toList()).stream()
                 .collect(Collectors.toMap(SplitExerciseCount::splitId, SplitExerciseCount::total));
@@ -149,7 +151,7 @@ public class BullSplitService {
 
     @Transactional
     public void addExercise(Long splitId, Long userId, Long dayId, Long exerciseId,
-                            Integer targetSets, String targetReps) {
+            Integer targetSets, String targetReps) {
         BullSplit split = owned(splitId, userId);
         day(dayId, splitId);
         Exercise exercise = exerciseRepository.findById(exerciseId)
@@ -179,7 +181,7 @@ public class BullSplitService {
 
     @Transactional
     public void updateTargets(Long splitId, Long userId, Long dayId, Long sdeId,
-                              Integer targetSets, String targetReps) {
+            Integer targetSets, String targetReps) {
         owned(splitId, userId);
         day(dayId, splitId);
         SplitDayExercise sde = sde(sdeId, dayId);
@@ -201,11 +203,14 @@ public class BullSplitService {
         List<SplitDayExercise> list = sdeRepository.findBySplitDayIdOrderByOrderIndex(dayId);
         int index = -1;
         for (int i = 0; i < list.size(); i++) {
-            if (list.get(i).getId().equals(sdeId)) index = i;
+            if (list.get(i).getId().equals(sdeId))
+                index = i;
         }
-        if (index < 0) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        if (index < 0)
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         int other = up ? index - 1 : index + 1;
-        if (other < 0 || other >= list.size()) return;
+        if (other < 0 || other >= list.size())
+            return;
         SplitDayExercise a = list.get(index);
         SplitDayExercise b = list.get(other);
         int temp = a.getOrderIndex();
@@ -215,7 +220,10 @@ public class BullSplitService {
         sdeRepository.save(b);
     }
 
-    /** Returns true if the split was archived (it has run history), false if it was deleted. */
+    /**
+     * Returns true if the split was archived (it has run history), false if it was
+     * deleted.
+     */
     @Transactional
     public boolean delete(Long splitId, Long userId) {
         BullSplit split = owned(splitId, userId);
@@ -240,7 +248,8 @@ public class BullSplitService {
         if (split.isLocked()) {
             throw new SplitException("A moderator unpublished this BullSplit, so it can't be published again.");
         }
-        if (split.isPublished()) return;
+        if (split.isPublished())
+            return;
         int limit = SplitLimits.maxPublished(user.getRole());
         if (splitRepository.countByOwnerIdAndPublishedTrueAndArchivedFalse(user.getId()) >= limit) {
             throw new SplitException("You've reached your limit of " + SplitLimits.describe(limit)
@@ -250,7 +259,8 @@ public class BullSplitService {
         SplitView view = buildView(split);
         for (SplitDayView day : view.days()) {
             if (day.exercises().isEmpty()) {
-                throw new SplitException(day.displayLabel() + " has no exercises. Every day needs at least one to publish.");
+                throw new SplitException(
+                        day.displayLabel() + " has no exercises. Every day needs at least one to publish.");
             }
         }
         List<String> customs = view.days().stream()
@@ -282,7 +292,7 @@ public class BullSplitService {
         splitRepository.save(split);
     }
 
-// ----- browsing, previewing, saving -----
+    // ----- browsing, previewing, saving -----
 
     @Transactional(readOnly = true)
     public PublicSplit viewPublic(Long splitId, Long viewerId) {
@@ -344,16 +354,17 @@ public class BullSplitService {
     @Transactional(readOnly = true)
     public List<SavedItem> saved(Long userId) {
         List<BullSplit> copies = splitRepository.findByOwnerIdAndCopyTrueAndArchivedFalseOrderByCreatedAtDesc(userId);
-        if (copies.isEmpty()) return List.of();
+        if (copies.isEmpty())
+            return List.of();
 
         Map<Long, Long> counts = sdeRepository.countBySplit(copies.stream().map(BullSplit::getId).toList())
                 .stream().collect(Collectors.toMap(SplitExerciseCount::splitId, SplitExerciseCount::total));
 
         Map<Long, BullSplit> originals = splitRepository.findAllById(copies.stream()
-                        .map(BullSplit::getCopiedFromId).filter(Objects::nonNull).toList()).stream()
+                .map(BullSplit::getCopiedFromId).filter(Objects::nonNull).toList()).stream()
                 .collect(Collectors.toMap(BullSplit::getId, o -> o));
         Map<Long, String> owners = userRepository.findAllById(originals.values().stream()
-                        .map(BullSplit::getOwnerId).toList()).stream()
+                .map(BullSplit::getOwnerId).toList()).stream()
                 .collect(Collectors.toMap(User::getId, User::getUsername));
 
         return copies.stream().map(c -> {
@@ -368,7 +379,8 @@ public class BullSplitService {
     public List<SplitListItem> publishedBy(Long userId) {
         List<BullSplit> splits = splitRepository
                 .findByOwnerIdAndPublishedTrueAndArchivedFalseAndLockedFalseOrderByCreatedAtDesc(userId);
-        if (splits.isEmpty()) return List.of();
+        if (splits.isEmpty())
+            return List.of();
         Map<Long, Long> counts = sdeRepository.countBySplit(splits.stream().map(BullSplit::getId).toList())
                 .stream().collect(Collectors.toMap(SplitExerciseCount::splitId, SplitExerciseCount::total));
         return splits.stream()
@@ -376,8 +388,6 @@ public class BullSplitService {
                         counts.getOrDefault(s.getId(), 0L)))
                 .toList();
     }
-
-
 
     // ----- helpers -----
 

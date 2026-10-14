@@ -33,7 +33,7 @@ public class AuthController {
 
     @PostMapping("/register")
     public String register(@Valid @ModelAttribute("form") RegistrationForm form,
-                           BindingResult result) {
+            BindingResult result) {
         if (form.getPassword() != null && !form.getPassword().equals(form.getConfirmPassword())) {
             result.rejectValue("confirmPassword", "mismatch", "Passwords do not match");
         }

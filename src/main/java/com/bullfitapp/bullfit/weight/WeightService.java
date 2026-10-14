@@ -69,7 +69,10 @@ public class WeightService {
         syncProfileWeight(userId);
     }
 
-    /** Keeps users.weight equal to the most recent entry, so there's one source of truth. */
+    /**
+     * Keeps users.weight equal to the most recent entry, so there's one source of
+     * truth.
+     */
     private void syncProfileWeight(Long userId) {
         BigDecimal latest = repository.findFirstByUserIdOrderByLoggedOnDesc(userId)
                 .map(BodyWeightLog::getWeight).orElse(null);

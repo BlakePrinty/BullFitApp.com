@@ -5,7 +5,8 @@ import org.springframework.validation.BindingResult;
 
 final class ExerciseFormSupport {
 
-    private ExerciseFormSupport() {}
+    private ExerciseFormSupport() {
+    }
 
     static void addFormAttributes(Model model, String heading, String action, String cancelUrl) {
         model.addAttribute("heading", heading);

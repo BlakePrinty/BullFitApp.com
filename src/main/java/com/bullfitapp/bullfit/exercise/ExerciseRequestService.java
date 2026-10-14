@@ -19,7 +19,7 @@ public class ExerciseRequestService {
     private final ExerciseRepository exerciseRepository;
 
     public ExerciseRequestService(ExerciseRequestRepository requestRepository,
-                                  ExerciseRepository exerciseRepository) {
+            ExerciseRepository exerciseRepository) {
         this.requestRepository = requestRepository;
         this.exerciseRepository = exerciseRepository;
     }
@@ -92,7 +92,7 @@ public class ExerciseRequestService {
             throw new ExerciseException(null, "A master exercise named \"" + exercise.getName()
                     + "\" already exists. Reject this request and point the user to it.");
         }
-        exercise.setOwnerId(null);   // promote in place
+        exercise.setOwnerId(null); // promote in place
         exercise.setActive(true);
         exerciseRepository.save(exercise);
 

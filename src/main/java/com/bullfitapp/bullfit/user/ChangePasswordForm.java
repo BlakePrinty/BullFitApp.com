@@ -17,7 +17,6 @@ public class ChangePasswordForm {
 
     // getters and setters
 
-
     public String getCurrentPassword() {
         return currentPassword;
     }
