@@ -10,10 +10,8 @@ import java.util.Locale;
 @Component("dt")
 public class DateDisplay {
 
-    private static final DateTimeFormatter DATE =
-            DateTimeFormatter.ofPattern("EEE, MMM d, yyyy", Locale.ENGLISH);
-    private static final DateTimeFormatter TIME =
-            DateTimeFormatter.ofPattern("h:mm a", Locale.ENGLISH);
+    private static final DateTimeFormatter DATE = DateTimeFormatter.ofPattern("EEE, MMM d, yyyy", Locale.ENGLISH);
+    private static final DateTimeFormatter TIME = DateTimeFormatter.ofPattern("h:mm a", Locale.ENGLISH);
 
     private ZonedDateTime zoned(LocalDateTime utc, String zone) {
         ZoneId id = ZoneOptions.isValid(zone) ? ZoneId.of(zone) : ZoneId.of(ZoneOptions.DEFAULT);

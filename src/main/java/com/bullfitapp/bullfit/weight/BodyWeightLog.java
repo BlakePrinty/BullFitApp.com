@@ -9,10 +9,14 @@ import java.time.LocalDate;
 @Table(name = "body_weight_log")
 public class BodyWeightLog {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) private Long id;
-    @Column(name = "user_id", nullable = false) private Long userId;
-    @Column(name = "weight", nullable = false) private BigDecimal weight;
-    @Column(name = "logged_on", nullable = false) private LocalDate loggedOn;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
+    @Column(name = "weight", nullable = false)
+    private BigDecimal weight;
+    @Column(name = "logged_on", nullable = false)
+    private LocalDate loggedOn;
 
     public Long getId() {
         return id;

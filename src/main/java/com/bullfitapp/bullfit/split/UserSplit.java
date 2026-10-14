@@ -8,17 +8,24 @@ import java.time.LocalDateTime;
 @Table(name = "user_split")
 public class UserSplit {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) private Long id;
-    @Column(name = "user_id", nullable = false) private Long userId;
-    @Column(name = "split_id", nullable = false) private Long splitId;
-    @Enumerated(EnumType.STRING) @Column(name = "status", nullable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
+    @Column(name = "split_id", nullable = false)
+    private Long splitId;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
     private RunStatus status = RunStatus.ACTIVE;
-    @Column(name = "target_length_days") private Integer targetLengthDays;
-    @Column(name = "current_day_number", nullable = false) private int currentDayNumber = 1;
-    @Column(name = "started_at", nullable = false) private LocalDateTime startedAt;
-    @Column(name = "ended_at") private LocalDateTime endedAt;
+    @Column(name = "target_length_days")
+    private Integer targetLengthDays;
+    @Column(name = "current_day_number", nullable = false)
+    private int currentDayNumber = 1;
+    @Column(name = "started_at", nullable = false)
+    private LocalDateTime startedAt;
+    @Column(name = "ended_at")
+    private LocalDateTime endedAt;
     // getters and setters
-
 
     public Long getId() {
         return id;
@@ -84,4 +91,3 @@ public class UserSplit {
         this.endedAt = endedAt;
     }
 }
-

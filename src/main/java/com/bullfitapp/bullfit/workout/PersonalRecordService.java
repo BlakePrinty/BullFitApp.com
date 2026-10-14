@@ -23,9 +23,9 @@ public class PersonalRecordService {
     private final WorkoutService workoutService;
 
     public PersonalRecordService(WorkoutSetRepository setRepository,
-                                 ExerciseRepository exerciseRepository,
-                                 PinnedRecordRepository pinnedRepository,
-                                 WorkoutService workoutService) {
+            ExerciseRepository exerciseRepository,
+            PinnedRecordRepository pinnedRepository,
+            WorkoutService workoutService) {
         this.setRepository = setRepository;
         this.exerciseRepository = exerciseRepository;
         this.pinnedRepository = pinnedRepository;
@@ -34,22 +34,30 @@ public class PersonalRecordService {
 
     // ----- the rules -----
 
-    /** Positive if the first set is better. Heavier wins (lighter for assisted), then more reps. */
+    /**
+     * Positive if the first set is better. Heavier wins (lighter for assisted),
+     * then more reps.
+     */
     static int compareSets(Equipment equipment, BigDecimal w1, int r1, BigDecimal w2, int r2) {
         if (equipment.usesWeight()) {
             int cmp = nz(w1).compareTo(nz(w2));
-            if (equipment == Equipment.MACHINE_ASSISTANCE) cmp = -cmp;
-            if (cmp != 0) return cmp;
+            if (equipment == Equipment.MACHINE_ASSISTANCE)
+                cmp = -cmp;
+            if (cmp != 0)
+                return cmp;
         }
         return Integer.compare(r1, r2);
     }
 
     /** Epley estimated 1RM, only for plain weighted lifts at up to 12 reps. */
     static BigDecimal estimateOneRepMax(Equipment equipment, BigDecimal weight, int reps) {
-        if (weight == null || weight.signum() <= 0 || reps < 1 || reps > MAX_E1RM_REPS) return null;
+        if (weight == null || weight.signum() <= 0 || reps < 1 || reps > MAX_E1RM_REPS)
+            return null;
         if (equipment == Equipment.BODYWEIGHT_ONLY || equipment == Equipment.BODYWEIGHT_LOADABLE
-                || equipment == Equipment.MACHINE_ASSISTANCE) return null;
-        if (reps == 1) return weight.setScale(1, RoundingMode.HALF_UP);
+                || equipment == Equipment.MACHINE_ASSISTANCE)
+            return null;
+        if (reps == 1)
+            return weight.setScale(1, RoundingMode.HALF_UP);
         BigDecimal factor = BigDecimal.ONE.add(
                 BigDecimal.valueOf(reps).divide(BigDecimal.valueOf(30), 6, RoundingMode.HALF_UP));
         return weight.multiply(factor).setScale(1, RoundingMode.HALF_UP);
@@ -74,7 +82,8 @@ public class PersonalRecordService {
         Map<Long, Best> best = new HashMap<>();
         for (SetRecordRow row : rows) {
             Exercise ex = exercises.get(row.exerciseId());
-            if (ex == null || ex.isCardio()) continue;
+            if (ex == null || ex.isCardio())
+                continue;
             Equipment eq = ex.getEquipment();
             Best b = best.computeIfAbsent(row.exerciseId(), k -> new Best());
 
@@ -83,10 +92,12 @@ public class PersonalRecordService {
             } else {
                 int cmp = compareSets(eq, row.weight(), row.reps(), b.row.weight(), b.row.reps());
                 boolean earlierTie = cmp == 0 && row.startedAt().isBefore(b.row.startedAt());
-                if (cmp > 0 || earlierTie) b.row = row;
+                if (cmp > 0 || earlierTie)
+                    b.row = row;
             }
             BigDecimal est = estimateOneRepMax(eq, row.weight(), row.reps());
-            if (est != null && (b.e1rm == null || est.compareTo(b.e1rm) > 0)) b.e1rm = est;
+            if (est != null && (b.e1rm == null || est.compareTo(b.e1rm) > 0))
+                b.e1rm = est;
         }
 
         Map<Long, PersonalRecord> result = new HashMap<>();
@@ -110,7 +121,8 @@ public class PersonalRecordService {
     @Transactional(readOnly = true)
     public List<PersonalRecord> pinned(Long userId) {
         List<PinnedRecord> pins = pinnedRepository.findByUserIdOrderBySlot(userId);
-        if (pins.isEmpty()) return List.of();
+        if (pins.isEmpty())
+            return List.of();
         List<Long> ids = pins.stream().map(PinnedRecord::getExerciseId).toList();
         Map<Long, PersonalRecord> records = build(
                 setRepository.findRowsForExercises(userId, WorkoutStatus.COMPLETED, ids, -1L));
@@ -142,7 +154,8 @@ public class PersonalRecordService {
         }
         Set<Integer> used = pins.stream().map(PinnedRecord::getSlot).collect(Collectors.toSet());
         int slot = 1;
-        while (used.contains(slot)) slot++;
+        while (used.contains(slot))
+            slot++;
         PinnedRecord pin = new PinnedRecord();
         pin.setUserId(userId);
         pin.setExerciseId(exerciseId);
@@ -162,7 +175,8 @@ public class PersonalRecordService {
         WorkoutView view = workoutService.view(workoutId, userId);
         List<WorkoutExerciseView> lifts = view.exercises().stream()
                 .filter(e -> !e.cardio() && !e.sets().isEmpty()).toList();
-        if (lifts.isEmpty()) return List.of();
+        if (lifts.isEmpty())
+            return List.of();
 
         List<Long> ids = lifts.stream().map(WorkoutExerciseView::exerciseId).toList();
         Map<Long, List<SetRecordRow>> prior = setRepository
@@ -172,16 +186,19 @@ public class PersonalRecordService {
         List<String> lines = new ArrayList<>();
         for (WorkoutExerciseView ex : lifts) {
             List<SetRecordRow> before = prior.get(ex.exerciseId());
-            if (before == null || before.isEmpty()) continue; // first time logged: nothing to beat
+            if (before == null || before.isEmpty())
+                continue; // first time logged: nothing to beat
             Equipment eq = ex.equipment();
 
             SetView nowBest = ex.sets().get(0);
             for (SetView s : ex.sets()) {
-                if (compareSets(eq, s.weight(), s.reps(), nowBest.weight(), nowBest.reps()) > 0) nowBest = s;
+                if (compareSets(eq, s.weight(), s.reps(), nowBest.weight(), nowBest.reps()) > 0)
+                    nowBest = s;
             }
             SetRecordRow beforeBest = before.get(0);
             for (SetRecordRow r : before) {
-                if (compareSets(eq, r.weight(), r.reps(), beforeBest.weight(), beforeBest.reps()) > 0) beforeBest = r;
+                if (compareSets(eq, r.weight(), r.reps(), beforeBest.weight(), beforeBest.reps()) > 0)
+                    beforeBest = r;
             }
             if (compareSets(eq, nowBest.weight(), nowBest.reps(),
                     beforeBest.weight(), beforeBest.reps()) > 0) {
@@ -193,12 +210,14 @@ public class PersonalRecordService {
             BigDecimal nowE = null;
             for (SetView s : ex.sets()) {
                 BigDecimal e = estimateOneRepMax(eq, s.weight(), s.reps());
-                if (e != null && (nowE == null || e.compareTo(nowE) > 0)) nowE = e;
+                if (e != null && (nowE == null || e.compareTo(nowE) > 0))
+                    nowE = e;
             }
             BigDecimal beforeE = BigDecimal.ZERO;
             for (SetRecordRow r : before) {
                 BigDecimal e = estimateOneRepMax(eq, r.weight(), r.reps());
-                if (e != null && e.compareTo(beforeE) > 0) beforeE = e;
+                if (e != null && e.compareTo(beforeE) > 0)
+                    beforeE = e;
             }
             if (nowE != null && nowE.compareTo(beforeE) > 0) {
                 lines.add(ex.name() + ": new estimated 1RM, " + Numbers.plain(nowE) + " lbs");

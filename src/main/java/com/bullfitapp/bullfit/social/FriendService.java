@@ -24,17 +24,25 @@ public class FriendService {
     private final UserRepository userRepository;
 
     public FriendService(FriendRequestRepository requestRepository,
-                         FriendshipRepository friendshipRepository,
-                         UserBlockRepository blockRepository, UserRepository userRepository) {
+            FriendshipRepository friendshipRepository,
+            UserBlockRepository blockRepository, UserRepository userRepository) {
         this.requestRepository = requestRepository;
         this.friendshipRepository = friendshipRepository;
         this.blockRepository = blockRepository;
         this.userRepository = userRepository;
     }
 
-    private static Long lo(Long a, Long b) { return a < b ? a : b; }
-    private static Long hi(Long a, Long b) { return a < b ? b : a; }
-    private static LocalDateTime now() { return LocalDateTime.now(ZoneOffset.UTC); }
+    private static Long lo(Long a, Long b) {
+        return a < b ? a : b;
+    }
+
+    private static Long hi(Long a, Long b) {
+        return a < b ? b : a;
+    }
+
+    private static LocalDateTime now() {
+        return LocalDateTime.now(ZoneOffset.UTC);
+    }
 
     public boolean areFriends(Long a, Long b) {
         return friendshipRepository.existsByUserAIdAndUserBId(lo(a, b), hi(a, b));
@@ -165,10 +173,10 @@ public class FriendService {
     private void cancelPending(Long senderId, Long receiverId) {
         requestRepository.findFirstBySenderIdAndReceiverIdAndStatus(
                 senderId, receiverId, FriendRequestStatus.PENDING).ifPresent(r -> {
-            r.setStatus(FriendRequestStatus.CANCELLED);
-            r.setRespondedAt(now());
-            requestRepository.save(r);
-        });
+                    r.setStatus(FriendRequestStatus.CANCELLED);
+                    r.setRespondedAt(now());
+                    requestRepository.save(r);
+                });
     }
 
     @Transactional
@@ -179,7 +187,8 @@ public class FriendService {
     // ----- reading -----
 
     private record Context(Set<Long> friends, Map<Long, Long> outgoing, Map<Long, Long> incoming,
-                           Set<Long> blockedByMe) {}
+            Set<Long> blockedByMe) {
+    }
 
     private Context context(Long viewerId) {
         Set<Long> friends = friendshipRepository.findByUserAIdOrUserBId(viewerId, viewerId).stream()
@@ -198,11 +207,16 @@ public class FriendService {
 
     private PersonItem toPerson(Context c, Long viewerId, User user) {
         Long id = user.getId();
-        if (id.equals(viewerId)) return new PersonItem(user, Relationship.SELF, null);
-        if (c.blockedByMe().contains(id)) return new PersonItem(user, Relationship.BLOCKED_BY_ME, null);
-        if (c.friends().contains(id)) return new PersonItem(user, Relationship.FRIENDS, null);
-        if (c.outgoing().containsKey(id)) return new PersonItem(user, Relationship.REQUEST_SENT, c.outgoing().get(id));
-        if (c.incoming().containsKey(id)) return new PersonItem(user, Relationship.REQUEST_RECEIVED, c.incoming().get(id));
+        if (id.equals(viewerId))
+            return new PersonItem(user, Relationship.SELF, null);
+        if (c.blockedByMe().contains(id))
+            return new PersonItem(user, Relationship.BLOCKED_BY_ME, null);
+        if (c.friends().contains(id))
+            return new PersonItem(user, Relationship.FRIENDS, null);
+        if (c.outgoing().containsKey(id))
+            return new PersonItem(user, Relationship.REQUEST_SENT, c.outgoing().get(id));
+        if (c.incoming().containsKey(id))
+            return new PersonItem(user, Relationship.REQUEST_RECEIVED, c.incoming().get(id));
         return new PersonItem(user, Relationship.NONE, null);
     }
 
@@ -240,7 +254,7 @@ public class FriendService {
         List<FriendRequest> requests = requestRepository
                 .findByReceiverIdAndStatusOrderByCreatedAtDesc(viewerId, FriendRequestStatus.PENDING);
         Map<Long, User> users = userRepository.findAllById(
-                        requests.stream().map(FriendRequest::getSenderId).toList()).stream()
+                requests.stream().map(FriendRequest::getSenderId).toList()).stream()
                 .collect(Collectors.toMap(User::getId, u -> u));
         return requests.stream()
                 .map(r -> new RequestItem(r.getId(), users.get(r.getSenderId()), r.getCreatedAt())).toList();
@@ -251,7 +265,7 @@ public class FriendService {
         List<FriendRequest> requests = requestRepository
                 .findBySenderIdAndStatusOrderByCreatedAtDesc(viewerId, FriendRequestStatus.PENDING);
         Map<Long, User> users = userRepository.findAllById(
-                        requests.stream().map(FriendRequest::getReceiverId).toList()).stream()
+                requests.stream().map(FriendRequest::getReceiverId).toList()).stream()
                 .collect(Collectors.toMap(User::getId, u -> u));
         return requests.stream()
                 .map(r -> new RequestItem(r.getId(), users.get(r.getReceiverId()), r.getCreatedAt())).toList();

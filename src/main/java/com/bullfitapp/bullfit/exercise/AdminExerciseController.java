@@ -33,7 +33,7 @@ public class AdminExerciseController {
 
     @PostMapping("/new")
     public String create(@Valid @ModelAttribute("form") ExerciseForm form,
-                         BindingResult result, Model model) {
+            BindingResult result, Model model) {
         if (!result.hasErrors()) {
             try {
                 exerciseService.createMaster(form);
@@ -55,8 +55,8 @@ public class AdminExerciseController {
 
     @PostMapping("/{id}/edit")
     public String update(@PathVariable Long id,
-                         @Valid @ModelAttribute("form") ExerciseForm form,
-                         BindingResult result, Model model) {
+            @Valid @ModelAttribute("form") ExerciseForm form,
+            BindingResult result, Model model) {
         if (!result.hasErrors()) {
             try {
                 exerciseService.updateMaster(id, form);

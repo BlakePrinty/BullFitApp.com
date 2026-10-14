@@ -7,9 +7,9 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 public record RunSummary(Long runId, String splitName, RunStatus status,
-                         LocalDateTime startedAt, LocalDateTime endedAt,
-                         long workouts, long completedExercises, long skippedExercises,
-                         long totalSets, BigDecimal volume, List<RunWorkoutItem> items) {
+        LocalDateTime startedAt, LocalDateTime endedAt,
+        long workouts, long completedExercises, long skippedExercises,
+        long totalSets, BigDecimal volume, List<RunWorkoutItem> items) {
 
     public long daysSpan() {
         LocalDateTime end = endedAt != null ? endedAt : LocalDateTime.now(ZoneOffset.UTC);

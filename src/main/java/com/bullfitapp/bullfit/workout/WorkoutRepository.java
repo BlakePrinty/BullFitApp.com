@@ -13,7 +13,9 @@ import java.util.Optional;
 
 public interface WorkoutRepository extends JpaRepository<Workout, Long> {
     Optional<Workout> findFirstByUserIdAndStatus(Long userId, WorkoutStatus status);
+
     Optional<Workout> findByIdAndUserId(Long id, Long userId);
+
     Page<Workout> findByUserIdAndStatusAndStartedAtGreaterThanEqualOrderByStartedAtDesc(
             Long userId, WorkoutStatus status, LocalDateTime from, Pageable pageable);
 
@@ -23,20 +25,20 @@ public interface WorkoutRepository extends JpaRepository<Workout, Long> {
     List<Workout> findByUserSplitIdAndStatusOrderByStartedAtAsc(Long runId, WorkoutStatus status);
 
     @Query("""
-        select new com.bullfitapp.bullfit.workout.RunWorkoutCount(w.userSplitId, count(w))
-        from Workout w
-        where w.userSplitId in :runIds and w.status = :status
-        group by w.userSplitId
-        """)
+            select new com.bullfitapp.bullfit.workout.RunWorkoutCount(w.userSplitId, count(w))
+            from Workout w
+            where w.userSplitId in :runIds and w.status = :status
+            group by w.userSplitId
+            """)
     List<RunWorkoutCount> countByRuns(@Param("runIds") Collection<Long> runIds,
-                                      @Param("status") WorkoutStatus status);
+            @Param("status") WorkoutStatus status);
 
     @Query("""
-        select new com.bullfitapp.bullfit.workout.WorkoutTime(w.userId, w.startedAt)
-        from Workout w
-        where w.userId in :userIds and w.status = :status and w.startedAt >= :from
-        """)
+            select new com.bullfitapp.bullfit.workout.WorkoutTime(w.userId, w.startedAt)
+            from Workout w
+            where w.userId in :userIds and w.status = :status and w.startedAt >= :from
+            """)
     List<WorkoutTime> findTimes(@Param("userIds") Collection<Long> userIds,
-                                @Param("status") WorkoutStatus status,
-                                @Param("from") LocalDateTime from);
+            @Param("status") WorkoutStatus status,
+            @Param("from") LocalDateTime from);
 }

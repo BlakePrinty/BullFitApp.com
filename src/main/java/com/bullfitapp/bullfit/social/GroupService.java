@@ -28,7 +28,7 @@ public class GroupService {
     private final FriendService friendService;
 
     public GroupService(AccountabilityGroupRepository groups, GroupMemberRepository members,
-                        UserRepository users, WorkoutRepository workouts, FriendService friendService) {
+            UserRepository users, WorkoutRepository workouts, FriendService friendService) {
         this.groups = groups;
         this.members = members;
         this.users = users;
@@ -36,9 +36,13 @@ public class GroupService {
         this.friendService = friendService;
     }
 
-    private static LocalDateTime now() { return LocalDateTime.now(ZoneOffset.UTC); }
+    private static LocalDateTime now() {
+        return LocalDateTime.now(ZoneOffset.UTC);
+    }
 
-    private static String blankToNull(String s) { return (s == null || s.isBlank()) ? null : s.trim(); }
+    private static String blankToNull(String s) {
+        return (s == null || s.isBlank()) ? null : s.trim();
+    }
 
     private AccountabilityGroup ownedGroup(Long groupId, Long userId) {
         AccountabilityGroup group = groups.findById(groupId)
@@ -54,7 +58,8 @@ public class GroupService {
     @Transactional(readOnly = true)
     public List<GroupListItem> myGroups(Long userId) {
         List<GroupMember> mine = members.findByUserIdAndStatus(userId, GroupMemberStatus.ACTIVE);
-        if (mine.isEmpty()) return List.of();
+        if (mine.isEmpty())
+            return List.of();
         List<Long> ids = mine.stream().map(GroupMember::getGroupId).toList();
         Map<Long, Long> counts = members.countByGroups(ids, GroupMemberStatus.ACTIVE).stream()
                 .collect(Collectors.toMap(GroupCount::groupId, GroupCount::total));
@@ -68,12 +73,13 @@ public class GroupService {
     @Transactional(readOnly = true)
     public List<GroupInvite> myInvites(Long userId) {
         List<GroupMember> invites = members.findByUserIdAndStatus(userId, GroupMemberStatus.INVITED);
-        if (invites.isEmpty()) return List.of();
+        if (invites.isEmpty())
+            return List.of();
         Map<Long, AccountabilityGroup> byId = groups.findAllById(
-                        invites.stream().map(GroupMember::getGroupId).toList()).stream()
+                invites.stream().map(GroupMember::getGroupId).toList()).stream()
                 .collect(Collectors.toMap(AccountabilityGroup::getId, g -> g));
         Map<Long, User> inviters = users.findAllById(
-                        invites.stream().map(GroupMember::getInvitedBy).toList()).stream()
+                invites.stream().map(GroupMember::getInvitedBy).toList()).stream()
                 .collect(Collectors.toMap(User::getId, u -> u));
         return invites.stream()
                 .map(m -> new GroupInvite(m.getGroupId(), byId.get(m.getGroupId()).getName(),
@@ -87,7 +93,9 @@ public class GroupService {
     }
 
     @Transactional(readOnly = true)
-    public long ownedCount(Long userId) { return groups.countByOwnerId(userId); }
+    public long ownedCount(Long userId) {
+        return groups.countByOwnerId(userId);
+    }
 
     // ----- creating and managing -----
 
@@ -163,7 +171,8 @@ public class GroupService {
         Optional<GroupMember> existing = members.findByGroupIdAndUserId(groupId, inviteeId);
         if (existing.isPresent()) {
             throw new SocialException(existing.get().getStatus() == GroupMemberStatus.ACTIVE
-                    ? "They're already in this group." : "They've already been invited.");
+                    ? "They're already in this group."
+                    : "They've already been invited.");
         }
         int max = GroupLimits.maxMembers(owner.getRole());
         if (members.countByGroupId(groupId) >= max) {
@@ -240,7 +249,8 @@ public class GroupService {
         Map<Long, User> userById = users.findAllById(all.stream().map(GroupMember::getUserId).toList()).stream()
                 .collect(Collectors.toMap(User::getId, u -> u));
 
-        // Dates are shown from the viewer's calendar; each member's workouts are placed on *their* local day.
+        // Dates are shown from the viewer's calendar; each member's workouts are placed
+        // on *their* local day.
         LocalDate today = WeightService.todayFor(viewer.getTimeZone());
         List<LocalDate> dates = IntStream.rangeClosed(0, 13).mapToObj(i -> today.minusDays(13 - i)).toList();
         LocalDate monday = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));

@@ -1,46 +1,57 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>BullSplit summary - BullFit</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
 </head>
+
 <body>
-<div th:replace="~{fragments/navbar :: navbar}"></div>
-<main>
-    <p><a th:href="@{/splits/completed}">&laquo; Completed BullSplits</a></p>
-    <h1 th:text="${run.splitName()}"></h1>
-    <p class="muted"
-       th:text="${@dt.date(run.startedAt(), currentUser.timeZone)}
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+    <main>
+        <p><a th:href="@{/splits/completed}">&laquo; Completed BullSplits</a></p>
+        <h1 th:text="${run.splitName()}"></h1>
+        <p class="muted" th:text="${@dt.date(run.startedAt(), currentUser.timeZone)}
                 + (${run.endedAt() != null} ? ' to ' + ${@dt.date(run.endedAt(), currentUser.timeZone)} : ' (in progress)')
                 + ' | ' + ${run.daysSpan()} + ' days'"></p>
-    <p class="message" th:if="${message}" th:text="${message}"></p>
+        <p class="message" th:if="${message}" th:text="${message}"></p>
 
-    <div class="stats">
-        <div><strong th:text="${run.workouts()}"></strong> <span class="muted">completed workouts</span></div>
-        <div><strong th:text="${run.completedExercises()}"></strong> <span class="muted">completed exercises</span></div>
-        <div><strong th:text="${run.skippedExercises()}"></strong> <span class="muted">skipped exercises</span></div>
-        <div><strong th:text="${run.totalSets()}"></strong> <span class="muted">sets</span></div>
-        <div><strong th:text="${run.volumeDisplay()}"></strong> <span class="muted">lbs total volume</span></div>
-    </div>
+        <div class="stats">
+            <div><strong th:text="${run.workouts()}"></strong> <span class="muted">completed workouts</span></div>
+            <div><strong th:text="${run.completedExercises()}"></strong> <span class="muted">completed exercises</span>
+            </div>
+            <div><strong th:text="${run.skippedExercises()}"></strong> <span class="muted">skipped exercises</span>
+            </div>
+            <div><strong th:text="${run.totalSets()}"></strong> <span class="muted">sets</span></div>
+            <div><strong th:text="${run.volumeDisplay()}"></strong> <span class="muted">lbs total volume</span></div>
+        </div>
 
-    <h2>Workouts</h2>
-    <p class="muted" th:if="${#lists.isEmpty(run.items())}">No finished workouts in this run.</p>
-    <table class="exercise-table" th:unless="${#lists.isEmpty(run.items())}">
-        <thead><tr><th>Date</th><th>Day</th><th>Done</th><th>Skipped</th></tr></thead>
-        <tbody>
-        <tr th:each="i : ${run.items()}">
-            <td>
-                <a th:href="@{/workouts/{id}/summary(id=${i.workoutId()})}"
-                   th:text="${@dt.date(i.startedAt(), currentUser.timeZone)}"></a>
-            </td>
-            <td th:text="${i.dayLabel()}"></td>
-            <td th:text="${i.completed()}"></td>
-            <td th:text="${i.skipped()}"></td>
-        </tr>
-        </tbody>
-    </table>
-</main>
+        <h2>Workouts</h2>
+        <p class="muted" th:if="${#lists.isEmpty(run.items())}">No finished workouts in this run.</p>
+        <table class="exercise-table" th:unless="${#lists.isEmpty(run.items())}">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Day</th>
+                    <th>Done</th>
+                    <th>Skipped</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="i : ${run.items()}">
+                    <td>
+                        <a th:href="@{/workouts/{id}/summary(id=${i.workoutId()})}"
+                            th:text="${@dt.date(i.startedAt(), currentUser.timeZone)}"></a>
+                    </td>
+                    <td th:text="${i.dayLabel()}"></td>
+                    <td th:text="${i.completed()}"></td>
+                    <td th:text="${i.skipped()}"></td>
+                </tr>
+            </tbody>
+        </table>
+    </main>
 </body>
+
 </html>

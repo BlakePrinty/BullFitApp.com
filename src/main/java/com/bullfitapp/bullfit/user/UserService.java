@@ -60,7 +60,8 @@ public class UserService {
             "settings", "profile", "login", "register", "logout");
 
     private BigDecimal toInches(Integer feet, Integer inches) {
-        if (feet == null && inches == null) return null;
+        if (feet == null && inches == null)
+            return null;
         int total = (feet == null ? 0 : feet) * 12 + (inches == null ? 0 : inches);
         return BigDecimal.valueOf(total);
     }

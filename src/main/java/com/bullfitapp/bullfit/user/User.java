@@ -182,8 +182,9 @@ public class User {
     }
 
     public String getJoinedDisplay() {
-        return createdAt == null ? "" : "Joined " + createdAt.format(
-                DateTimeFormatter.ofPattern("MMMM yyyy", Locale.ENGLISH));
+        return createdAt == null ? ""
+                : "Joined " + createdAt.format(
+                        DateTimeFormatter.ofPattern("MMMM yyyy", Locale.ENGLISH));
     }
 
     public String getFullName() {

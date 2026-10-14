@@ -53,10 +53,9 @@ public class WeightController {
     }
 
     @PostMapping
-    public String log(@RequestParam(required = false)
-                      @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
-                      @RequestParam(required = false) BigDecimal weight,
-                      Principal principal, RedirectAttributes redirect) {
+    public String log(@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam(required = false) BigDecimal weight,
+            Principal principal, RedirectAttributes redirect) {
         User user = user(principal);
         try {
             weightService.log(user.getId(), user.getTimeZone(), date, weight);

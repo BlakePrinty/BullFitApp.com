@@ -10,7 +10,8 @@ public final class ZoneOptions {
     private static final List<String> PREFIXES = List.of("America/", "Europe/", "Asia/",
             "Australia/", "Africa/", "Pacific/", "Atlantic/", "Indian/");
 
-    private ZoneOptions() {}
+    private ZoneOptions() {
+    }
 
     public static List<String> all() {
         return ZoneId.getAvailableZoneIds().stream()

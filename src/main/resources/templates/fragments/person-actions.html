@@ -1,59 +1,61 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <body>
-<span th:fragment="actions(p, next)" class="friend-actions">
-    <th:block th:switch="${p.relationship().name()}">
-        <span th:case="'SELF'" class="muted">You</span>
+    <span th:fragment="actions(p, next)" class="friend-actions">
+        <th:block th:switch="${p.relationship().name()}">
+            <span th:case="'SELF'" class="muted">You</span>
 
-        <span th:case="'FRIENDS'">
-            <span class="muted">Friends</span>
-            <form th:action="@{/friends/{id}/remove(id=${p.user().id})}" method="post"
-                  onsubmit="return confirm('Remove this friend?');">
-                <input type="hidden" name="next" th:value="${next}">
-                <button type="submit" class="link-button">Unfriend</button>
-            </form>
-        </span>
+            <span th:case="'FRIENDS'">
+                <span class="muted">Friends</span>
+                <form th:action="@{/friends/{id}/remove(id=${p.user().id})}" method="post"
+                    onsubmit="return confirm('Remove this friend?');">
+                    <input type="hidden" name="next" th:value="${next}">
+                    <button type="submit" class="link-button">Unfriend</button>
+                </form>
+            </span>
 
-        <span th:case="'REQUEST_SENT'">
-            <span class="muted">Request sent</span>
-            <form th:action="@{/friends/requests/{id}/cancel(id=${p.requestId()})}" method="post">
-                <input type="hidden" name="next" th:value="${next}">
-                <button type="submit" class="link-button">Cancel</button>
-            </form>
-        </span>
+            <span th:case="'REQUEST_SENT'">
+                <span class="muted">Request sent</span>
+                <form th:action="@{/friends/requests/{id}/cancel(id=${p.requestId()})}" method="post">
+                    <input type="hidden" name="next" th:value="${next}">
+                    <button type="submit" class="link-button">Cancel</button>
+                </form>
+            </span>
 
-        <span th:case="'REQUEST_RECEIVED'">
-            <form th:action="@{/friends/requests/{id}/accept(id=${p.requestId()})}" method="post">
-                <input type="hidden" name="next" th:value="${next}">
-                <button type="submit">Accept</button>
-            </form>
-            <form th:action="@{/friends/requests/{id}/decline(id=${p.requestId()})}" method="post">
-                <input type="hidden" name="next" th:value="${next}">
-                <button type="submit" class="link-button">Decline</button>
-            </form>
-        </span>
+            <span th:case="'REQUEST_RECEIVED'">
+                <form th:action="@{/friends/requests/{id}/accept(id=${p.requestId()})}" method="post">
+                    <input type="hidden" name="next" th:value="${next}">
+                    <button type="submit">Accept</button>
+                </form>
+                <form th:action="@{/friends/requests/{id}/decline(id=${p.requestId()})}" method="post">
+                    <input type="hidden" name="next" th:value="${next}">
+                    <button type="submit" class="link-button">Decline</button>
+                </form>
+            </span>
 
-        <span th:case="'BLOCKED_BY_ME'">
-            <span class="muted">Blocked</span>
-            <form th:action="@{/friends/{id}/unblock(id=${p.user().id})}" method="post">
-                <input type="hidden" name="next" th:value="${next}">
-                <button type="submit" class="link-button">Unblock</button>
-            </form>
-        </span>
+            <span th:case="'BLOCKED_BY_ME'">
+                <span class="muted">Blocked</span>
+                <form th:action="@{/friends/{id}/unblock(id=${p.user().id})}" method="post">
+                    <input type="hidden" name="next" th:value="${next}">
+                    <button type="submit" class="link-button">Unblock</button>
+                </form>
+            </span>
 
-        <form th:case="'NONE'" th:action="@{/friends/request}" method="post">
-            <input type="hidden" name="receiverId" th:value="${p.user().id}">
+            <form th:case="'NONE'" th:action="@{/friends/request}" method="post">
+                <input type="hidden" name="receiverId" th:value="${p.user().id}">
+                <input type="hidden" name="next" th:value="${next}">
+                <button type="submit">Add friend</button>
+            </form>
+        </th:block>
+
+        <form th:if="${p.relationship().name() != 'SELF' and p.relationship().name() != 'BLOCKED_BY_ME'}"
+            th:action="@{/friends/{id}/block(id=${p.user().id})}" method="post"
+            onsubmit="return confirm('Block this person? They will be removed from your friends and cannot send you requests.');">
             <input type="hidden" name="next" th:value="${next}">
-            <button type="submit">Add friend</button>
+            <button type="submit" class="link-button">Block</button>
         </form>
-    </th:block>
-
-    <form th:if="${p.relationship().name() != 'SELF' and p.relationship().name() != 'BLOCKED_BY_ME'}"
-          th:action="@{/friends/{id}/block(id=${p.user().id})}" method="post"
-          onsubmit="return confirm('Block this person? They will be removed from your friends and cannot send you requests.');">
-        <input type="hidden" name="next" th:value="${next}">
-        <button type="submit" class="link-button">Block</button>
-    </form>
-</span>
+    </span>
 </body>
+
 </html>

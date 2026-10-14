@@ -27,7 +27,7 @@ public class AccountController {
 
     @PostMapping("/settings/password")
     public String change(@Valid @ModelAttribute("form") ChangePasswordForm form,
-                         BindingResult result, Principal principal) {
+            BindingResult result, Principal principal) {
         if (form.getNewPassword() != null
                 && !form.getNewPassword().equals(form.getConfirmNewPassword())) {
             result.rejectValue("confirmNewPassword", "mismatch", "Passwords do not match");

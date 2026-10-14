@@ -7,5 +7,6 @@ import java.util.Optional;
 
 public interface SplitExerciseOverrideRepository extends JpaRepository<SplitExerciseOverride, Long> {
     List<SplitExerciseOverride> findByUserSplitId(Long userSplitId);
+
     Optional<SplitExerciseOverride> findByUserSplitIdAndSplitDayExerciseId(Long userSplitId, Long sdeId);
 }

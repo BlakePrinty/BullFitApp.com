@@ -1,113 +1,116 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Friends - BullFit</title>
   <link rel="stylesheet" th:href="@{/css/main.css}">
 </head>
+
 <body>
-<div th:replace="~{fragments/navbar :: navbar}"></div>
-<main>
-  <h1>Friends</h1>
-  <p class="message" th:if="${message}" th:text="${message}"></p>
-  <p class="error" th:if="${error}" th:text="${error}"></p>
+  <div th:replace="~{fragments/navbar :: navbar}"></div>
+  <main>
+    <h1>Friends</h1>
+    <p class="message" th:if="${message}" th:text="${message}"></p>
+    <p class="error" th:if="${error}" th:text="${error}"></p>
 
-  <form th:action="@{/people}" method="get" class="filters">
-    <input type="text" name="q" placeholder="Find people by username" minlength="2">
-    <button type="submit">Search</button>
-  </form>
+    <form th:action="@{/people}" method="get" class="filters">
+      <input type="text" name="q" placeholder="Find people by username" minlength="2">
+      <button type="submit">Search</button>
+    </form>
 
-  <section th:if="${!#lists.isEmpty(incoming)}">
-    <h2>Requests</h2>
-    <table class="exercise-table">
+    <section th:if="${!#lists.isEmpty(incoming)}">
+      <h2>Requests</h2>
+      <table class="exercise-table">
+        <tbody>
+          <tr th:each="r : ${incoming}">
+            <td>
+              <a th:href="@{/profile/{u}(u=${r.user().username})}">
+                <span th:replace="~{fragments/username :: username(${r.user()})}"></span>
+              </a>
+            </td>
+            <td>
+              <form th:action="@{/friends/requests/{id}/accept(id=${r.id()})}" method="post" style="display:inline">
+                <input type="hidden" name="next" value="/friends">
+                <button type="submit">Accept</button>
+              </form>
+              <form th:action="@{/friends/requests/{id}/decline(id=${r.id()})}" method="post" style="display:inline">
+                <input type="hidden" name="next" value="/friends">
+                <button type="submit" class="link-button">Decline</button>
+              </form>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section th:if="${!#lists.isEmpty(outgoing)}">
+      <h2>Sent requests</h2>
+      <table class="exercise-table">
+        <tbody>
+          <tr th:each="r : ${outgoing}">
+            <td>
+              <a th:href="@{/profile/{u}(u=${r.user().username})}">
+                <span th:replace="~{fragments/username :: username(${r.user()})}"></span>
+              </a>
+            </td>
+            <td>
+              <form th:action="@{/friends/requests/{id}/cancel(id=${r.id()})}" method="post">
+                <input type="hidden" name="next" value="/friends">
+                <button type="submit" class="link-button">Cancel</button>
+              </form>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <h2>Your friends</h2>
+    <p class="muted" th:if="${#lists.isEmpty(friends)}">
+      No friends yet. Use the search above to find people by username.
+    </p>
+    <table class="exercise-table" th:unless="${#lists.isEmpty(friends)}">
       <tbody>
-      <tr th:each="r : ${incoming}">
-        <td>
-          <a th:href="@{/profile/{u}(u=${r.user().username})}">
-            <span th:replace="~{fragments/username :: username(${r.user()})}"></span>
-          </a>
-        </td>
-        <td>
-          <form th:action="@{/friends/requests/{id}/accept(id=${r.id()})}" method="post" style="display:inline">
-            <input type="hidden" name="next" value="/friends">
-            <button type="submit">Accept</button>
-          </form>
-          <form th:action="@{/friends/requests/{id}/decline(id=${r.id()})}" method="post" style="display:inline">
-            <input type="hidden" name="next" value="/friends">
-            <button type="submit" class="link-button">Decline</button>
-          </form>
-        </td>
-      </tr>
-      </tbody>
-    </table>
-  </section>
-
-  <section th:if="${!#lists.isEmpty(outgoing)}">
-    <h2>Sent requests</h2>
-    <table class="exercise-table">
-      <tbody>
-      <tr th:each="r : ${outgoing}">
-        <td>
-          <a th:href="@{/profile/{u}(u=${r.user().username})}">
-            <span th:replace="~{fragments/username :: username(${r.user()})}"></span>
-          </a>
-        </td>
-        <td>
-          <form th:action="@{/friends/requests/{id}/cancel(id=${r.id()})}" method="post">
-            <input type="hidden" name="next" value="/friends">
-            <button type="submit" class="link-button">Cancel</button>
-          </form>
-        </td>
-      </tr>
-      </tbody>
-    </table>
-  </section>
-
-  <h2>Your friends</h2>
-  <p class="muted" th:if="${#lists.isEmpty(friends)}">
-    No friends yet. Use the search above to find people by username.
-  </p>
-  <table class="exercise-table" th:unless="${#lists.isEmpty(friends)}">
-    <tbody>
-    <tr th:each="f : ${friends}">
-      <td>
-        <a th:href="@{/profile/{u}(u=${f.username})}">
-          <span th:replace="~{fragments/username :: username(${f})}"></span>
-        </a>
-      </td>
-      <td>
-        <form th:action="@{/friends/{id}/remove(id=${f.id})}" method="post" style="display:inline"
+        <tr th:each="f : ${friends}">
+          <td>
+            <a th:href="@{/profile/{u}(u=${f.username})}">
+              <span th:replace="~{fragments/username :: username(${f})}"></span>
+            </a>
+          </td>
+          <td>
+            <form th:action="@{/friends/{id}/remove(id=${f.id})}" method="post" style="display:inline"
               onsubmit="return confirm('Remove this friend?');">
-          <input type="hidden" name="next" value="/friends">
-          <button type="submit" class="link-button">Unfriend</button>
-        </form>
-        <form th:action="@{/friends/{id}/block(id=${f.id})}" method="post" style="display:inline"
+              <input type="hidden" name="next" value="/friends">
+              <button type="submit" class="link-button">Unfriend</button>
+            </form>
+            <form th:action="@{/friends/{id}/block(id=${f.id})}" method="post" style="display:inline"
               onsubmit="return confirm('Block this person?');">
-          <input type="hidden" name="next" value="/friends">
-          <button type="submit" class="link-button">Block</button>
-        </form>
-      </td>
-    </tr>
-    </tbody>
-  </table>
-
-  <details th:if="${!#lists.isEmpty(blocked)}">
-    <summary>Blocked people</summary>
-    <table class="exercise-table">
-      <tbody>
-      <tr th:each="b : ${blocked}">
-        <td th:text="${b.username}"></td>
-        <td>
-          <form th:action="@{/friends/{id}/unblock(id=${b.id})}" method="post">
-            <input type="hidden" name="next" value="/friends">
-            <button type="submit" class="link-button">Unblock</button>
-          </form>
-        </td>
-      </tr>
+              <input type="hidden" name="next" value="/friends">
+              <button type="submit" class="link-button">Block</button>
+            </form>
+          </td>
+        </tr>
       </tbody>
     </table>
-  </details>
-</main>
+
+    <details th:if="${!#lists.isEmpty(blocked)}">
+      <summary>Blocked people</summary>
+      <table class="exercise-table">
+        <tbody>
+          <tr th:each="b : ${blocked}">
+            <td th:text="${b.username}"></td>
+            <td>
+              <form th:action="@{/friends/{id}/unblock(id=${b.id})}" method="post">
+                <input type="hidden" name="next" value="/friends">
+                <button type="submit" class="link-button">Unblock</button>
+              </form>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </details>
+  </main>
 </body>
+
 </html>

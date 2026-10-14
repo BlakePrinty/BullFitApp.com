@@ -29,7 +29,7 @@ public class BullSplitController {
     private final SplitRunService splitRunService;
 
     public BullSplitController(BullSplitService splitService, ExerciseService exerciseService,
-                               UserRepository userRepository, SplitRunService splitRunService) {
+            UserRepository userRepository, SplitRunService splitRunService) {
         this.splitService = splitService;
         this.exerciseService = exerciseService;
         this.userRepository = userRepository;
@@ -65,7 +65,7 @@ public class BullSplitController {
 
     @PostMapping("/new")
     public String create(@Valid @ModelAttribute("form") SplitForm form, BindingResult result,
-                         Principal principal) {
+            Principal principal) {
         if (result.hasErrors()) {
             return "split/new";
         }
@@ -87,8 +87,8 @@ public class BullSplitController {
 
     @PostMapping("/{id}/details")
     public String details(@PathVariable Long id, @RequestParam String name,
-                          @RequestParam(required = false) String description,
-                          Principal principal, RedirectAttributes redirect) {
+            @RequestParam(required = false) String description,
+            Principal principal, RedirectAttributes redirect) {
         try {
             splitService.updateDetails(id, user(principal).getId(), name, description);
             redirect.addFlashAttribute("message", "Saved.");
@@ -100,8 +100,8 @@ public class BullSplitController {
 
     @PostMapping("/{id}/days/{dayId}/label")
     public String label(@PathVariable Long id, @PathVariable Long dayId,
-                        @RequestParam(required = false) String label,
-                        Principal principal, RedirectAttributes redirect) {
+            @RequestParam(required = false) String label,
+            Principal principal, RedirectAttributes redirect) {
         try {
             splitService.renameDay(id, user(principal).getId(), dayId, label);
         } catch (SplitException e) {
@@ -112,10 +112,10 @@ public class BullSplitController {
 
     @GetMapping("/{id}/days/{dayId}/add-exercise")
     public String pickExercise(@PathVariable Long id, @PathVariable Long dayId,
-                               @RequestParam(required = false) String q,
-                               @RequestParam(required = false) MuscleGroup muscle,
-                               @RequestParam(required = false) Equipment equipment,
-                               Principal principal, Model model) {
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false) MuscleGroup muscle,
+            @RequestParam(required = false) Equipment equipment,
+            Principal principal, Model model) {
         User user = user(principal);
         SplitView split = splitService.viewOwned(id, user.getId());
         SplitDayView day = split.days().stream().filter(d -> d.id().equals(dayId)).findFirst()
@@ -139,10 +139,10 @@ public class BullSplitController {
 
     @PostMapping("/{id}/days/{dayId}/exercises")
     public String addExercise(@PathVariable Long id, @PathVariable Long dayId,
-                              @RequestParam Long exerciseId,
-                              @RequestParam(required = false) Integer targetSets,
-                              @RequestParam(required = false) String targetReps,
-                              Principal principal, RedirectAttributes redirect) {
+            @RequestParam Long exerciseId,
+            @RequestParam(required = false) Integer targetSets,
+            @RequestParam(required = false) String targetReps,
+            Principal principal, RedirectAttributes redirect) {
         try {
             splitService.addExercise(id, user(principal).getId(), dayId, exerciseId, targetSets, targetReps);
         } catch (SplitException e) {
@@ -153,9 +153,9 @@ public class BullSplitController {
 
     @PostMapping("/{id}/days/{dayId}/exercises/{sdeId}/targets")
     public String targets(@PathVariable Long id, @PathVariable Long dayId, @PathVariable Long sdeId,
-                          @RequestParam(required = false) Integer targetSets,
-                          @RequestParam(required = false) String targetReps,
-                          Principal principal, RedirectAttributes redirect) {
+            @RequestParam(required = false) Integer targetSets,
+            @RequestParam(required = false) String targetReps,
+            Principal principal, RedirectAttributes redirect) {
         try {
             splitService.updateTargets(id, user(principal).getId(), dayId, sdeId, targetSets, targetReps);
         } catch (SplitException e) {
@@ -166,21 +166,21 @@ public class BullSplitController {
 
     @PostMapping("/{id}/days/{dayId}/exercises/{sdeId}/remove")
     public String remove(@PathVariable Long id, @PathVariable Long dayId, @PathVariable Long sdeId,
-                         Principal principal) {
+            Principal principal) {
         splitService.removeExercise(id, user(principal).getId(), dayId, sdeId);
         return builder(id) + "#day-" + dayId;
     }
 
     @PostMapping("/{id}/days/{dayId}/exercises/{sdeId}/up")
     public String up(@PathVariable Long id, @PathVariable Long dayId, @PathVariable Long sdeId,
-                     Principal principal) {
+            Principal principal) {
         splitService.moveExercise(id, user(principal).getId(), dayId, sdeId, true);
         return builder(id) + "#day-" + dayId;
     }
 
     @PostMapping("/{id}/days/{dayId}/exercises/{sdeId}/down")
     public String down(@PathVariable Long id, @PathVariable Long dayId, @PathVariable Long sdeId,
-                       Principal principal) {
+            Principal principal) {
         splitService.moveExercise(id, user(principal).getId(), dayId, sdeId, false);
         return builder(id) + "#day-" + dayId;
     }
@@ -223,7 +223,7 @@ public class BullSplitController {
 
     @PostMapping("/{id}/start")
     public String start(@PathVariable Long id, @RequestParam(required = false) Integer weeks,
-                        Principal principal, RedirectAttributes redirect) {
+            Principal principal, RedirectAttributes redirect) {
         try {
             splitRunService.start(user(principal).getId(), id, weeks);
             redirect.addFlashAttribute("message", "BullSplit started. Your first workout is on the Workouts page.");

@@ -1,38 +1,49 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>My BullSplits - BullFit</title>
   <link rel="stylesheet" th:href="@{/css/main.css}">
 </head>
+
 <body>
-<div th:replace="~{fragments/navbar :: navbar}"></div>
-<main>
-  <h1>BullSplits</h1>
-  <div th:replace="~{fragments/split-tabs :: tabs('my')}"></div>
+  <div th:replace="~{fragments/navbar :: navbar}"></div>
+  <main>
+    <h1>BullSplits</h1>
+    <div th:replace="~{fragments/split-tabs :: tabs('my')}"></div>
 
-  <p class="message" th:if="${message}" th:text="${message}"></p>
-  <p class="error" th:if="${error}" th:text="${error}"></p>
+    <p class="message" th:if="${message}" th:text="${message}"></p>
+    <p class="error" th:if="${error}" th:text="${error}"></p>
 
-  <p class="muted"
-     th:text="${held} + ' of ' + ${heldLimit} + ' BullSplits held | ' + ${published} + ' of ' + ${publishedLimit} + ' published'"></p>
+    <p class="muted"
+      th:text="${held} + ' of ' + ${heldLimit} + ' BullSplits held | ' + ${published} + ' of ' + ${publishedLimit} + ' published'">
+    </p>
 
-  <p><a class="button" th:href="@{/splits/new}">+ New BullSplit</a></p>
+    <p><a class="button" th:href="@{/splits/new}">+ New BullSplit</a></p>
 
-  <p class="muted" th:if="${#lists.isEmpty(splits)}">You haven't created a BullSplit yet.</p>
+    <p class="muted" th:if="${#lists.isEmpty(splits)}">You haven't created a BullSplit yet.</p>
 
-  <table class="exercise-table" th:unless="${#lists.isEmpty(splits)}">
-    <thead><tr><th>Name</th><th>Days</th><th>Exercises</th><th>Status</th></tr></thead>
-    <tbody>
-    <tr th:each="s : ${splits}">
-      <td><a th:href="@{/splits/{id}(id=${s.id})}" th:text="${s.name}"></a></td>
-      <td th:text="${s.dayCount}"></td>
-      <td th:text="${s.exerciseCount}"></td>
-      <td th:text="${s.published} ? 'Published' : 'Private'"></td>
-    </tr>
-    </tbody>
-  </table>
-</main>
+    <table class="exercise-table" th:unless="${#lists.isEmpty(splits)}">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Days</th>
+          <th>Exercises</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="s : ${splits}">
+          <td><a th:href="@{/splits/{id}(id=${s.id})}" th:text="${s.name}"></a></td>
+          <td th:text="${s.dayCount}"></td>
+          <td th:text="${s.exerciseCount}"></td>
+          <td th:text="${s.published} ? 'Published' : 'Private'"></td>
+        </tr>
+      </tbody>
+    </table>
+  </main>
 </body>
+
 </html>

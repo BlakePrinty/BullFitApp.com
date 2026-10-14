@@ -24,8 +24,11 @@ public class Workout {
     @Column(name = "ended_at")
     private LocalDateTime endedAt;
 
-    @Column(name = "user_split_id") private Long userSplitId;
-    @Column(name = "split_day_id") private Long splitDayId;
+    @Column(name = "user_split_id")
+    private Long userSplitId;
+    
+    @Column(name = "split_day_id")
+    private Long splitDayId;
 
     public Long getId() {
         return id;
@@ -83,4 +86,3 @@ public class Workout {
         this.userSplitId = userSplitId;
     }
 }
-

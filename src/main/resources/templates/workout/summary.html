@@ -1,48 +1,54 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Workout summary - BullFit</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
 </head>
+
 <body>
-<div th:replace="~{fragments/navbar :: navbar}"></div>
-<main>
-    <h1>Workout complete</h1>
-    <p class="muted" th:text="${@dt.dateTime(workout.startedAt(), currentUser.timeZone)}"></p>
-    <p class="muted" th:if="${workout.splitTitle() != null}" th:text="${workout.splitTitle()}"></p>
-    <div class="stats">
-        <div><strong th:text="${workout.durationMinutes()}"></strong> <span class="muted">minutes</span></div>
-        <div><strong th:text="${workout.completedCount()}"></strong> <span class="muted">exercises</span></div>
-        <div th:if="${workout.skippedCount() > 0}"><strong th:text="${workout.skippedCount()}"></strong> <span class="muted">skipped</span></div>
-        <div><strong th:text="${workout.totalSets()}"></strong> <span class="muted">sets</span></div>
-        <div><strong th:text="${workout.totalVolumeDisplay()}"></strong> <span class="muted">lbs total volume</span></div>
-    </div>
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+    <main>
+        <h1>Workout complete</h1>
+        <p class="muted" th:text="${@dt.dateTime(workout.startedAt(), currentUser.timeZone)}"></p>
+        <p class="muted" th:if="${workout.splitTitle() != null}" th:text="${workout.splitTitle()}"></p>
+        <div class="stats">
+            <div><strong th:text="${workout.durationMinutes()}"></strong> <span class="muted">minutes</span></div>
+            <div><strong th:text="${workout.completedCount()}"></strong> <span class="muted">exercises</span></div>
+            <div th:if="${workout.skippedCount() > 0}"><strong th:text="${workout.skippedCount()}"></strong> <span
+                    class="muted">skipped</span></div>
+            <div><strong th:text="${workout.totalSets()}"></strong> <span class="muted">sets</span></div>
+            <div><strong th:text="${workout.totalVolumeDisplay()}"></strong> <span class="muted">lbs total volume</span>
+            </div>
+        </div>
 
-    <section class="we-card pr-card" th:if="${newRecords != null and !#lists.isEmpty(newRecords)}">
-        <h3>New records</h3>
-        <ul>
-            <li th:each="line : ${newRecords}" th:text="${line}"></li>
-        </ul>
-    </section>
+        <section class="we-card pr-card" th:if="${newRecords != null and !#lists.isEmpty(newRecords)}">
+            <h3>New records</h3>
+            <ul>
+                <li th:each="line : ${newRecords}" th:text="${line}"></li>
+            </ul>
+        </section>
 
-    <section class="we-card" th:each="ex : ${workout.exercises}">
-        <h3 th:text="${ex.name}"></h3>
-        <p class="muted" th:if="${ex.swappedFromName() != null}" th:text="'Swapped from ' + ${ex.swappedFromName()}"></p>
-        <p class="muted" th:if="${ex.status().name() == 'SKIPPED'}">Skipped</p>
-        <p th:if="${!ex.cardio() and ex.status().name() != 'SKIPPED'}" th:text="${ex.setsSummary()}"></p>
-        <p th:if="${ex.cardio() and ex.status().name() != 'SKIPPED'}" th:text="${ex.cardioSummary()}"></p>
-    </section>
+        <section class="we-card" th:each="ex : ${workout.exercises}">
+            <h3 th:text="${ex.name}"></h3>
+            <p class="muted" th:if="${ex.swappedFromName() != null}"
+                th:text="'Swapped from ' + ${ex.swappedFromName()}"></p>
+            <p class="muted" th:if="${ex.status().name() == 'SKIPPED'}">Skipped</p>
+            <p th:if="${!ex.cardio() and ex.status().name() != 'SKIPPED'}" th:text="${ex.setsSummary()}"></p>
+            <p th:if="${ex.cardio() and ex.status().name() != 'SKIPPED'}" th:text="${ex.cardioSummary()}"></p>
+        </section>
 
-    <div class="workout-actions">
-        <a class="button" th:href="@{/workouts}">Back to workouts</a>
-        <a th:href="@{/workouts/{id}/edit(id=${workout.id})}">Edit workout</a>
-        <form th:action="@{/workouts/{id}/delete(id=${workout.id})}" method="post"
-              onsubmit="return confirm('Delete this workout permanently?');">
-            <button type="submit" class="link-button">Delete</button>
-        </form>
-    </div>
-</main>
+        <div class="workout-actions">
+            <a class="button" th:href="@{/workouts}">Back to workouts</a>
+            <a th:href="@{/workouts/{id}/edit(id=${workout.id})}">Edit workout</a>
+            <form th:action="@{/workouts/{id}/delete(id=${workout.id})}" method="post"
+                onsubmit="return confirm('Delete this workout permanently?');">
+                <button type="submit" class="link-button">Delete</button>
+            </form>
+        </div>
+    </main>
 </body>
+
 </html>

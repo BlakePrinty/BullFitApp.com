@@ -8,12 +8,18 @@ import java.time.LocalDateTime;
 @Table(name = "accountability_group")
 public class AccountabilityGroup {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) private Long id;
-    @Column(name = "owner_id", nullable = false) private Long ownerId;
-    @Column(name = "name", nullable = false) private String name;
-    @Column(name = "description") private String description;
-    @Column(name = "weekly_goal", nullable = false) private int weeklyGoal = 3;
-    @Column(name = "created_at", nullable = false) private LocalDateTime createdAt;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    @Column(name = "owner_id", nullable = false)
+    private Long ownerId;
+    @Column(name = "name", nullable = false)
+    private String name;
+    @Column(name = "description")
+    private String description;
+    @Column(name = "weekly_goal", nullable = false)
+    private int weeklyGoal = 3;
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
     // getters and setters
 
     public Long getId() {

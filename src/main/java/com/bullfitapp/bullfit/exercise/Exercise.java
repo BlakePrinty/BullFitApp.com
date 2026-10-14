@@ -37,9 +37,13 @@ public class Exercise {
         createdAt = LocalDateTime.now();
     }
 
-    public boolean isCardio() { return muscleGroup == MuscleGroup.CARDIO; }
+    public boolean isCardio() {
+        return muscleGroup == MuscleGroup.CARDIO;
+    }
 
-    public boolean isCustom() { return ownerId != null; }
+    public boolean isCustom() {
+        return ownerId != null;
+    }
 
     // generate getters and setters (Alt+Insert)
 

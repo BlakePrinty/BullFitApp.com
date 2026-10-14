@@ -8,10 +8,14 @@ import java.time.LocalDateTime;
 @Table(name = "friendship")
 public class Friendship {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) private Long id;
-    @Column(name = "user_a_id", nullable = false) private Long userAId;
-    @Column(name = "user_b_id", nullable = false) private Long userBId;
-    @Column(name = "created_at", nullable = false) private LocalDateTime createdAt;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    @Column(name = "user_a_id", nullable = false)
+    private Long userAId;
+    @Column(name = "user_b_id", nullable = false)
+    private Long userBId;
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
     // getters and setters
 
     public Long getId() {

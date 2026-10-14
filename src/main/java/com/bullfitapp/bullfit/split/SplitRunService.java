@@ -27,9 +27,10 @@ public class SplitRunService {
     private final WorkoutSetRepository workoutSetRepository;
 
     public SplitRunService(UserSplitRepository userSplitRepository, BullSplitRepository splitRepository,
-                           SplitDayRepository dayRepository, SplitDayExerciseRepository sdeRepository,
-                           WorkoutRepository workoutRepository, WorkoutExerciseRepository weRepository,
-                           SplitExerciseOverrideRepository splitExerciseOverrideRepository, WorkoutSetRepository workoutSetRepository) {
+            SplitDayRepository dayRepository, SplitDayExerciseRepository sdeRepository,
+            WorkoutRepository workoutRepository, WorkoutExerciseRepository weRepository,
+            SplitExerciseOverrideRepository splitExerciseOverrideRepository,
+            WorkoutSetRepository workoutSetRepository) {
         this.userSplitRepository = userSplitRepository;
         this.splitRepository = splitRepository;
         this.dayRepository = dayRepository;
@@ -49,14 +50,15 @@ public class SplitRunService {
     @Transactional(readOnly = true)
     public ActiveRunView activeView(Long userId) {
         UserSplit run = findActive(userId).orElse(null);
-        if (run == null) return null;
+        if (run == null)
+            return null;
         BullSplit split = splitRepository.findById(run.getSplitId()).orElseThrow();
 
         List<SplitDay> days = dayRepository.findBySplitIdOrderByDayNumber(split.getId());
         Map<Long, Long> perDay = days.isEmpty() ? Map.of()
                 : sdeRepository.findBySplitDayIdInOrderByOrderIndex(days.stream().map(SplitDay::getId).toList())
-                .stream().collect(Collectors.groupingBy(SplitDayExercise::getSplitDayId,
-                        Collectors.counting()));
+                        .stream().collect(Collectors.groupingBy(SplitDayExercise::getSplitDayId,
+                                Collectors.counting()));
         List<DayOption> options = days.stream()
                 .map(d -> new DayOption(d.getDayNumber(), d.getLabel(), perDay.getOrDefault(d.getId(), 0L)))
                 .toList();
@@ -118,7 +120,10 @@ public class SplitRunService {
         userSplitRepository.save(run);
     }
 
-    /** Starts today's workout from the active split, pre-filled. Returns the workout id. */
+    /**
+     * Starts today's workout from the active split, pre-filled. Returns the workout
+     * id.
+     */
     @Transactional
     public Long startDayWorkout(Long userId, Integer requestedDay) {
         UserSplit run = findActive(userId)
@@ -137,8 +142,6 @@ public class SplitRunService {
         if (planned.isEmpty()) {
             throw new SplitException("That day has no exercises. Add some to the BullSplit first.");
         }
-
-
 
         Workout workout = new Workout();
         workout.setUserId(userId);
@@ -168,15 +171,21 @@ public class SplitRunService {
         return workout.getId();
     }
 
-    /** Called when a workout finishes: moves the run to the next day, wrapping after the last. */
+    /**
+     * Called when a workout finishes: moves the run to the next day, wrapping after
+     * the last.
+     */
     @Transactional
     public void afterWorkoutFinished(Workout workout) {
-        if (workout.getUserSplitId() == null || workout.getSplitDayId() == null) return;
+        if (workout.getUserSplitId() == null || workout.getSplitDayId() == null)
+            return;
         UserSplit run = userSplitRepository.findById(workout.getUserSplitId()).orElse(null);
-        if (run == null || run.getStatus() != RunStatus.ACTIVE) return;
+        if (run == null || run.getStatus() != RunStatus.ACTIVE)
+            return;
         SplitDay day = dayRepository.findById(workout.getSplitDayId()).orElse(null);
         BullSplit split = splitRepository.findById(run.getSplitId()).orElse(null);
-        if (day == null || split == null) return;
+        if (day == null || split == null)
+            return;
         run.setCurrentDayNumber(day.getDayNumber() % split.getDayCount() + 1);
         userSplitRepository.save(run);
     }
@@ -184,12 +193,15 @@ public class SplitRunService {
     /** "BullSplit name - Day 3: Pull" for a workout, or null for freestyle. */
     @Transactional(readOnly = true)
     public String title(Long userSplitId, Long splitDayId) {
-        if (userSplitId == null || splitDayId == null) return null;
+        if (userSplitId == null || splitDayId == null)
+            return null;
         UserSplit run = userSplitRepository.findById(userSplitId).orElse(null);
         SplitDay day = dayRepository.findById(splitDayId).orElse(null);
-        if (run == null || day == null) return null;
+        if (run == null || day == null)
+            return null;
         BullSplit split = splitRepository.findById(run.getSplitId()).orElse(null);
-        if (split == null) return null;
+        if (split == null)
+            return null;
         return split.getName() + " - Day " + day.getDayNumber()
                 + (day.getLabel() == null ? "" : ": " + day.getLabel());
     }
@@ -198,9 +210,10 @@ public class SplitRunService {
     @Transactional
     public void applyOverride(Long userSplitId, Long sdeId, Long exerciseId) {
         SplitDayExercise sde = sdeRepository.findById(sdeId).orElse(null);
-        if (sde == null) return;
-        Optional<SplitExerciseOverride> existing =
-                splitExerciseOverrideRepository.findByUserSplitIdAndSplitDayExerciseId(userSplitId, sdeId);
+        if (sde == null)
+            return;
+        Optional<SplitExerciseOverride> existing = splitExerciseOverrideRepository
+                .findByUserSplitIdAndSplitDayExerciseId(userSplitId, sdeId);
         if (exerciseId.equals(sde.getExerciseId())) { // swapped back to the original
             existing.ifPresent(splitExerciseOverrideRepository::delete);
             return;
@@ -218,7 +231,8 @@ public class SplitRunService {
     @Transactional(readOnly = true)
     public List<RunListItem> completedRuns(Long userId) {
         List<UserSplit> runs = userSplitRepository.findByUserIdAndStatusOrderByEndedAtDesc(userId, RunStatus.COMPLETED);
-        if (runs.isEmpty()) return List.of();
+        if (runs.isEmpty())
+            return List.of();
         Map<Long, BullSplit> splits = splitRepository
                 .findAllById(runs.stream().map(UserSplit::getSplitId).toList()).stream()
                 .collect(Collectors.toMap(BullSplit::getId, s -> s));
@@ -251,18 +265,20 @@ public class SplitRunService {
         }
 
         Map<Long, SplitDay> days = dayRepository.findAllById(workouts.stream()
-                        .map(Workout::getSplitDayId).filter(Objects::nonNull).distinct().toList()).stream()
+                .map(Workout::getSplitDayId).filter(Objects::nonNull).distinct().toList()).stream()
                 .collect(Collectors.toMap(SplitDay::getId, d -> d));
 
         List<RunWorkoutItem> items = workouts.stream().map(w -> {
             SplitDay day = days.get(w.getSplitDayId());
-            String label = day == null ? "" : "Day " + day.getDayNumber()
-                    + (day.getLabel() == null ? "" : ": " + day.getLabel());
+            String label = day == null ? ""
+                    : "Day " + day.getDayNumber()
+                            + (day.getLabel() == null ? "" : ": " + day.getLabel());
             return new RunWorkoutItem(w.getId(), w.getStartedAt(), label,
                     completedBy.getOrDefault(w.getId(), 0L), skippedBy.getOrDefault(w.getId(), 0L));
         }).toList();
 
-        BigDecimal volume = workoutSetRepository.volumeForRun(runId, WorkoutStatus.COMPLETED, Equipment.MACHINE_ASSISTANCE);
+        BigDecimal volume = workoutSetRepository.volumeForRun(runId, WorkoutStatus.COMPLETED,
+                Equipment.MACHINE_ASSISTANCE);
         return new RunSummary(runId, split.getName(), run.getStatus(), run.getStartedAt(), run.getEndedAt(),
                 workouts.size(), completedTotal, skippedTotal,
                 workoutSetRepository.countSetsForRun(runId, WorkoutStatus.COMPLETED),
@@ -273,8 +289,10 @@ public class SplitRunService {
         if (sde.getTargetSets() != null && sde.getTargetReps() != null) {
             return sde.getTargetSets() + " x " + sde.getTargetReps();
         }
-        if (sde.getTargetSets() != null) return sde.getTargetSets() + " sets";
-        if (sde.getTargetReps() != null) return sde.getTargetReps() + " reps";
+        if (sde.getTargetSets() != null)
+            return sde.getTargetSets() + " sets";
+        if (sde.getTargetReps() != null)
+            return sde.getTargetReps() + " reps";
         return null;
     }
 }

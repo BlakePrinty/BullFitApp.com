@@ -1,119 +1,121 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title th:text="${group.name()} + ' - BullFit'">Group</title>
   <link rel="stylesheet" th:href="@{/css/main.css}">
 </head>
+
 <body>
-<div th:replace="~{fragments/navbar :: navbar}"></div>
-<main>
-  <p><a th:href="@{/groups}">&laquo; BS Trackers</a></p>
-  <h1 th:text="${group.name()}"></h1>
-  <p th:if="${group.description() != null}" th:text="${group.description()}"></p>
-  <p class="muted" th:text="'Goal: ' + ${group.weeklyGoal()} + ' days per week | ' + ${group.capacity()}"></p>
-  <p class="message" th:if="${message}" th:text="${message}"></p>
-  <p class="error" th:if="${error}" th:text="${error}"></p>
+  <div th:replace="~{fragments/navbar :: navbar}"></div>
+  <main>
+    <p><a th:href="@{/groups}">&laquo; BS Trackers</a></p>
+    <h1 th:text="${group.name()}"></h1>
+    <p th:if="${group.description() != null}" th:text="${group.description()}"></p>
+    <p class="muted" th:text="'Goal: ' + ${group.weeklyGoal()} + ' days per week | ' + ${group.capacity()}"></p>
+    <p class="message" th:if="${message}" th:text="${message}"></p>
+    <p class="error" th:if="${error}" th:text="${error}"></p>
 
-  <p th:if="${#lists.isEmpty(group.trainedToday())}" class="muted">No one has trained yet today.</p>
-  <p th:unless="${#lists.isEmpty(group.trainedToday())}">
-    Trained today:
-    <span th:each="r, st : ${group.trainedToday()}">
-            <span th:replace="~{fragments/username :: username(${r.user()})}"></span><span th:unless="${st.last}">, </span>
-        </span>
-  </p>
-
-  <div class="grid-scroll">
-    <table class="check-grid">
-      <thead>
-      <tr>
-        <th class="left">Member</th>
-        <th>This week</th>
-        <th th:each="d : ${group.dates()}">
-          <span th:text="${@dt.weekday(d)}"></span><br>
-          <span class="muted" th:text="${@dt.dayOfMonth(d)}"></span>
-        </th>
-      </tr>
-      </thead>
-      <tbody>
-      <tr th:each="r : ${group.rows()}">
-        <td class="left">
-          <a th:href="@{/profile/{u}(u=${r.user().username})}">
-            <span th:replace="~{fragments/username :: username(${r.user()})}"></span>
-          </a>
-          <span class="muted" th:if="${r.owner()}">(owner)</span>
-          <form th:if="${group.viewerIsOwner() and !r.owner()}"
-                th:action="@{/groups/{id}/members/{uid}/remove(id=${group.id()},uid=${r.user().id})}"
-                method="post" style="display:inline"
-                onsubmit="return confirm('Remove this member?');">
-            <button type="submit" class="link-button">Remove</button>
-          </form>
-        </td>
-        <td>
-          <span th:text="${r.weekCount()} + '/' + ${group.weeklyGoal()}"></span>
-          <span class="badge" th:if="${r.metGoal()}">No BS</span>
-        </td>
-        <td th:each="hit : ${r.days()}" th:classappend="${hit} ? 'hit'" th:text="${hit} ? '✓' : '·'"></td>
-      </tr>
-      </tbody>
-    </table>
-  </div>
-  <p class="muted">
-    Check-ins count any finished workout, shown by day only. Nothing else about anyone's training is shared,
-    and days count from the day each member joined. It's the honor system.
-  </p>
-
-  <section th:if="${group.viewerIsOwner()}">
-    <h2>Invite friends</h2>
-    <form th:if="${!#lists.isEmpty(group.invitable())}"
-          th:action="@{/groups/{id}/invite(id=${group.id()})}" method="post" class="log-form">
-      <select name="friendId">
-        <option th:each="f : ${group.invitable()}" th:value="${f.id}" th:text="${f.username}"></option>
-      </select>
-      <button type="submit">Send invite</button>
-    </form>
-    <p class="muted" th:if="${#lists.isEmpty(group.invitable())}">
-      None of your friends are available to invite. <a th:href="@{/friends}">Find friends</a>
+    <p th:if="${#lists.isEmpty(group.trainedToday())}" class="muted">No one has trained yet today.</p>
+    <p th:unless="${#lists.isEmpty(group.trainedToday())}">
+      Trained today:
+      <span th:each="r, st : ${group.trainedToday()}">
+        <span th:replace="~{fragments/username :: username(${r.user()})}"></span><span th:unless="${st.last}">, </span>
+      </span>
     </p>
 
-    <div th:if="${!#lists.isEmpty(group.invited())}">
-      <h3>Pending invites</h3>
-      <ul class="pr-list">
-        <li th:each="u : ${group.invited()}">
-          <span th:text="${u.username}"></span>
-          <form th:action="@{/groups/{id}/members/{uid}/remove(id=${group.id()},uid=${u.id})}"
-                method="post" style="display:inline">
-            <button type="submit" class="link-button">Cancel</button>
-          </form>
-        </li>
-      </ul>
+    <div class="grid-scroll">
+      <table class="check-grid">
+        <thead>
+          <tr>
+            <th class="left">Member</th>
+            <th>This week</th>
+            <th th:each="d : ${group.dates()}">
+              <span th:text="${@dt.weekday(d)}"></span><br>
+              <span class="muted" th:text="${@dt.dayOfMonth(d)}"></span>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="r : ${group.rows()}">
+            <td class="left">
+              <a th:href="@{/profile/{u}(u=${r.user().username})}">
+                <span th:replace="~{fragments/username :: username(${r.user()})}"></span>
+              </a>
+              <span class="muted" th:if="${r.owner()}">(owner)</span>
+              <form th:if="${group.viewerIsOwner() and !r.owner()}"
+                th:action="@{/groups/{id}/members/{uid}/remove(id=${group.id()},uid=${r.user().id})}" method="post"
+                style="display:inline" onsubmit="return confirm('Remove this member?');">
+                <button type="submit" class="link-button">Remove</button>
+              </form>
+            </td>
+            <td>
+              <span th:text="${r.weekCount()} + '/' + ${group.weeklyGoal()}"></span>
+              <span class="badge" th:if="${r.metGoal()}">No BS</span>
+            </td>
+            <td th:each="hit : ${r.days()}" th:classappend="${hit} ? 'hit'" th:text="${hit} ? '✓' : '·'"></td>
+          </tr>
+        </tbody>
+      </table>
     </div>
+    <p class="muted">
+      Check-ins count any finished workout, shown by day only. Nothing else about anyone's training is shared,
+      and days count from the day each member joined. It's the honor system.
+    </p>
 
-    <details>
-      <summary>Group settings</summary>
-      <form th:action="@{/groups/{id}/settings(id=${group.id()})}" method="post" class="log-form">
-        <input type="text" name="name" th:value="${group.name()}" maxlength="50" required>
-        <input type="text" name="description" th:value="${group.description()}" maxlength="300"
-               placeholder="Description (optional)">
-        <select name="weeklyGoal">
-          <option th:each="n : ${#numbers.sequence(1, 7)}" th:value="${n}" th:text="${n} + ' days/week'"
-                  th:selected="${n == group.weeklyGoal()}"></option>
+    <section th:if="${group.viewerIsOwner()}">
+      <h2>Invite friends</h2>
+      <form th:if="${!#lists.isEmpty(group.invitable())}" th:action="@{/groups/{id}/invite(id=${group.id()})}"
+        method="post" class="log-form">
+        <select name="friendId">
+          <option th:each="f : ${group.invitable()}" th:value="${f.id}" th:text="${f.username}"></option>
         </select>
-        <button type="submit">Save</button>
+        <button type="submit">Send invite</button>
       </form>
-    </details>
+      <p class="muted" th:if="${#lists.isEmpty(group.invitable())}">
+        None of your friends are available to invite. <a th:href="@{/friends}">Find friends</a>
+      </p>
 
-    <form th:action="@{/groups/{id}/delete(id=${group.id()})}" method="post"
-          onsubmit="return confirm('Delete this group for everyone?');">
-      <button type="submit" class="link-button">Delete group</button>
+      <div th:if="${!#lists.isEmpty(group.invited())}">
+        <h3>Pending invites</h3>
+        <ul class="pr-list">
+          <li th:each="u : ${group.invited()}">
+            <span th:text="${u.username}"></span>
+            <form th:action="@{/groups/{id}/members/{uid}/remove(id=${group.id()},uid=${u.id})}" method="post"
+              style="display:inline">
+              <button type="submit" class="link-button">Cancel</button>
+            </form>
+          </li>
+        </ul>
+      </div>
+
+      <details>
+        <summary>Group settings</summary>
+        <form th:action="@{/groups/{id}/settings(id=${group.id()})}" method="post" class="log-form">
+          <input type="text" name="name" th:value="${group.name()}" maxlength="50" required>
+          <input type="text" name="description" th:value="${group.description()}" maxlength="300"
+            placeholder="Description (optional)">
+          <select name="weeklyGoal">
+            <option th:each="n : ${#numbers.sequence(1, 7)}" th:value="${n}" th:text="${n} + ' days/week'"
+              th:selected="${n == group.weeklyGoal()}"></option>
+          </select>
+          <button type="submit">Save</button>
+        </form>
+      </details>
+
+      <form th:action="@{/groups/{id}/delete(id=${group.id()})}" method="post"
+        onsubmit="return confirm('Delete this group for everyone?');">
+        <button type="submit" class="link-button">Delete group</button>
+      </form>
+    </section>
+
+    <form th:unless="${group.viewerIsOwner()}" th:action="@{/groups/{id}/leave(id=${group.id()})}" method="post"
+      onsubmit="return confirm('Leave this group?');">
+      <button type="submit" class="link-button">Leave group</button>
     </form>
-  </section>
-
-  <form th:unless="${group.viewerIsOwner()}" th:action="@{/groups/{id}/leave(id=${group.id()})}" method="post"
-        onsubmit="return confirm('Leave this group?');">
-    <button type="submit" class="link-button">Leave group</button>
-  </form>
-</main>
+  </main>
 </body>
+
 </html>

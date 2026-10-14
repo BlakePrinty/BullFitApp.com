@@ -3,7 +3,8 @@ package com.bullfitapp.bullfit.social;
 import com.bullfitapp.bullfit.user.Role;
 
 public final class GroupLimits {
-    private GroupLimits() {}
+    private GroupLimits() {
+    }
 
     public static int maxOwned(Role role) {
         return switch (role) {

@@ -30,7 +30,8 @@ public class GroupController {
     private String attempt(String target, RedirectAttributes redirect, String success, Runnable action) {
         try {
             action.run();
-            if (success != null) redirect.addFlashAttribute("message", success);
+            if (success != null)
+                redirect.addFlashAttribute("message", success);
         } catch (SocialException e) {
             redirect.addFlashAttribute("error", e.getMessage());
         }
@@ -55,7 +56,7 @@ public class GroupController {
 
     @PostMapping("/new")
     public String create(@Valid @ModelAttribute("form") GroupForm form, BindingResult result,
-                         Principal principal) {
+            Principal principal) {
         if (result.hasErrors()) {
             return "groups/new";
         }
@@ -75,23 +76,23 @@ public class GroupController {
 
     @PostMapping("/{id}/settings")
     public String settings(@PathVariable Long id, @RequestParam String name,
-                           @RequestParam(required = false) String description,
-                           @RequestParam(required = false) Integer weeklyGoal,
-                           Principal principal, RedirectAttributes redirect) {
+            @RequestParam(required = false) String description,
+            @RequestParam(required = false) Integer weeklyGoal,
+            Principal principal, RedirectAttributes redirect) {
         return attempt("/groups/" + id, redirect, "Saved.",
                 () -> groupService.updateSettings(user(principal).getId(), id, name, description, weeklyGoal));
     }
 
     @PostMapping("/{id}/invite")
     public String invite(@PathVariable Long id, @RequestParam Long friendId,
-                         Principal principal, RedirectAttributes redirect) {
+            Principal principal, RedirectAttributes redirect) {
         return attempt("/groups/" + id, redirect, "Invite sent.",
                 () -> groupService.invite(user(principal).getId(), id, friendId));
     }
 
     @PostMapping("/{id}/members/{userId}/remove")
     public String remove(@PathVariable Long id, @PathVariable Long userId,
-                         Principal principal, RedirectAttributes redirect) {
+            Principal principal, RedirectAttributes redirect) {
         return attempt("/groups/" + id, redirect, "Removed.",
                 () -> groupService.removeMember(user(principal).getId(), id, userId));
     }

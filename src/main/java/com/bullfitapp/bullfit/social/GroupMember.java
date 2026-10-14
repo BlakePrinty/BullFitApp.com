@@ -8,14 +8,21 @@ import java.time.LocalDateTime;
 @Table(name = "group_member")
 public class GroupMember {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) private Long id;
-    @Column(name = "group_id", nullable = false) private Long groupId;
-    @Column(name = "user_id", nullable = false) private Long userId;
-    @Enumerated(EnumType.STRING) @Column(name = "status", nullable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    @Column(name = "group_id", nullable = false)
+    private Long groupId;
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
     private GroupMemberStatus status = GroupMemberStatus.INVITED;
-    @Column(name = "invited_by", nullable = false) private Long invitedBy;
-    @Column(name = "created_at", nullable = false) private LocalDateTime createdAt;
-    @Column(name = "joined_at") private LocalDateTime joinedAt;
+    @Column(name = "invited_by", nullable = false)
+    private Long invitedBy;
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
+    @Column(name = "joined_at")
+    private LocalDateTime joinedAt;
     // getters and setters
 
     public Long getId() {

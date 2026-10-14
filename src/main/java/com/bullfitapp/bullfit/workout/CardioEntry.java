@@ -8,7 +8,8 @@ import java.math.BigDecimal;
 @Table(name = "cardio_entry")
 public class CardioEntry {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) private Long id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column(name = "workout_exercise_id", nullable = false)
     private Long workoutExerciseId;

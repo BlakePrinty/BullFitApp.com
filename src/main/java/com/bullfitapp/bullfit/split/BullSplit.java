@@ -9,19 +9,33 @@ import java.time.ZoneOffset;
 @Table(name = "bullsplit")
 public class BullSplit {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) private Long id;
-    @Column(name = "owner_id", nullable = false) private Long ownerId;
-    @Column(name = "name", nullable = false) private String name;
-    @Column(name = "description") private String description;
-    @Column(name = "day_count", nullable = false) private int dayCount;
-    @Column(name = "is_published", nullable = false) private boolean published;
-    @Column(name = "archived", nullable = false) private boolean archived;
-    @Column(name = "is_copy", nullable = false) private boolean copy;
-    @Column(name = "copied_from_id") private Long copiedFromId;
-    @Column(name = "created_at", nullable = false, updatable = false) private LocalDateTime createdAt;
-    @Column(name = "locked", nullable = false) private boolean locked;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    @Column(name = "owner_id", nullable = false)
+    private Long ownerId;
+    @Column(name = "name", nullable = false)
+    private String name;
+    @Column(name = "description")
+    private String description;
+    @Column(name = "day_count", nullable = false)
+    private int dayCount;
+    @Column(name = "is_published", nullable = false)
+    private boolean published;
+    @Column(name = "archived", nullable = false)
+    private boolean archived;
+    @Column(name = "is_copy", nullable = false)
+    private boolean copy;
+    @Column(name = "copied_from_id")
+    private Long copiedFromId;
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+    @Column(name = "locked", nullable = false)
+    private boolean locked;
 
-    @PrePersist void onCreate() { createdAt = LocalDateTime.now(ZoneOffset.UTC); }
+    @PrePersist
+    void onCreate() {
+        createdAt = LocalDateTime.now(ZoneOffset.UTC);
+    }
 
     public Long getId() {
         return id;
