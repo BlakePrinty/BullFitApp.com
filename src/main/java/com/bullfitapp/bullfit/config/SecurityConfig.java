@@ -9,6 +9,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
 @Configuration
 @EnableWebSecurity
@@ -29,16 +30,24 @@ public class SecurityConfig {
     }
 
     @Bean
-    SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    AuthenticationSuccessHandler loginSuccessHandler(SiteAccess siteAccess) {
+        return (request, response, authentication) ->
+                response.sendRedirect(request.getContextPath()
+                        + (siteAccess.isLimited(authentication) ? "/welcome" : "/"));
+    }
+
+    @Bean
+    SecurityFilterChain filterChain(HttpSecurity http,
+                                    AuthenticationSuccessHandler loginSuccessHandler) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/register", "/login", "/css/**", "/js/**", "/error").permitAll()
+                        .requestMatchers("/", "/welcome", "/register", "/login", "/css/**", "/js/**", "/error").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/developer/**").hasRole("DEVELOPER")
                         .anyRequest().authenticated())
                 .formLogin(form -> form
                         .loginPage("/login")
-                        .defaultSuccessUrl("/", true)
+                        .successHandler(loginSuccessHandler)
                         .permitAll())
                 .logout(logout -> logout.logoutSuccessUrl("/").permitAll());
         return http.build();

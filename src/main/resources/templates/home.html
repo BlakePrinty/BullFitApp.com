@@ -10,6 +10,11 @@
 <body>
     <div th:replace="~{fragments/navbar :: navbar}"></div>
     <main>
+        <section class="we-card" th:if="${comingSoon}">
+            <h2>Coming soon</h2>
+            <p>BullFit is in development. You can create an account now, and we'll be ready for you at launch.</p>
+        </section>
+
         <h1>BullFit</h1>
         <p>Track your workouts. Share your splits.</p>
     </main>

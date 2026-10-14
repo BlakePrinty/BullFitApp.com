@@ -1,5 +1,6 @@
 package com.bullfitapp.bullfit.common;
 
+import com.bullfitapp.bullfit.config.SiteAccess;
 import com.bullfitapp.bullfit.social.FriendService;
 import com.bullfitapp.bullfit.social.GroupService;
 import com.bullfitapp.bullfit.user.User;
@@ -15,12 +16,14 @@ public class GlobalModelAttributes {
     private final UserRepository userRepository;
     private final FriendService friendService;
     private final GroupService groupService;
+    private final SiteAccess siteAccess;
 
     public GlobalModelAttributes(UserRepository userRepository, FriendService friendService,
-            GroupService groupService) {
+            GroupService groupService, SiteAccess siteAccess) {
         this.userRepository = userRepository;
         this.friendService = friendService;
         this.groupService = groupService;
+        this.siteAccess = siteAccess;
     }
 
     @ModelAttribute("currentUser")
@@ -44,5 +47,15 @@ public class GlobalModelAttributes {
             return 0L;
         return userRepository.findByUsername(principal.getName())
                 .map(u -> groupService.pendingInviteCount(u.getId())).orElse(0L);
+    }
+
+    @ModelAttribute("comingSoon")
+    public boolean comingSoon() {
+        return siteAccess.isComingSoon();
+    }
+
+    @ModelAttribute("limitedAccess")
+    public boolean limitedAccess() {
+        return siteAccess.isLimitedNow();
     }
 }

@@ -1,5 +1,6 @@
 package com.bullfitapp.bullfit.user;
 
+import com.bullfitapp.bullfit.config.SiteAccess;
 import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,9 +16,11 @@ import java.time.Period;
 public class AuthController {
 
     private final UserService userService;
+    private final SiteAccess siteAccess;
 
-    public AuthController(UserService userService) {
+    public AuthController(UserService userService, SiteAccess siteAccess) {
         this.userService = userService;
+        this.siteAccess = siteAccess;
     }
 
     @GetMapping("/login")
@@ -50,6 +53,6 @@ public class AuthController {
             result.rejectValue(e.getMessage(), "duplicate", "That " + e.getMessage() + " is already taken");
             return "register";
         }
-        return "redirect:/login?registered";
+        return siteAccess.isComingSoon() ? "redirect:/welcome?registered" : "redirect:/login?registered";
     }
 }

@@ -11,6 +11,9 @@
   <div th:replace="~{fragments/navbar :: navbar}"></div>
   <main>
     <h1>Create your account</h1>
+    <p class="muted" th:if="${comingSoon}">
+      BullFit isn't open yet, but you can reserve your account now.
+    </p>
     <form th:action="@{/register}" th:object="${form}" method="post">
       <label>Username <input type="text" th:field="*{username}"></label>
       <span th:errors="*{username}"></span><br>
